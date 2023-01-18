@@ -1,0 +1,43 @@
+{
+  "name": "token-buyer-contract",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "docgen": "hardhat docgen",
+    "lint-contracts": "solhint --max-warnings 0 'contracts/**/*.sol'",
+    "lint-ts": "eslint --max-warnings 0 '**/*.{js,ts}'",
+    "lint": "npm run lint-contracts && npm run lint-ts",
+    "test": "hardhat test"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.1",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.5",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@nomiclabs/hardhat-etherscan": "^3.1.5",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
+    "chai": "^4.3.7",
+    "eslint": "^8.32.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-node": "^11.1.0",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.6",
+    "hardhat-gas-reporter": "^1.0.9",
+    "prettier": "^2.8.3",
+    "prettier-plugin-solidity": "^1.1.1",
+    "solhint": "^3.3.7",
+    "solidity-docgen": "^0.6.0-beta.34",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
+}
