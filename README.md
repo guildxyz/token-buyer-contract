@@ -1,6 +1,6 @@
 # Token buyer smart contract
 
-A smart contract that can execute token swaps and accepts a fee for (guild.xyz)[https://guild.xyz].
+A smart contract that can execute token swaps and accepts a fee for [guild.xyz](https://guild.xyz).
 
 A detailed documentation of the contract can be found in the _[docs](docs)_ folder.
 
