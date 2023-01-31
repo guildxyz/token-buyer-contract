@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/// @title A smart contract for buying any kind of tokens and taking a fee.
 interface ITokenBuyer {
-    // TODO
-    /*
-    1) get assets from the user: much like in Poap fee collector
-    2) swap assets. Possibilities:
-        - encode full path off-chain, much like https://github.com/Uniswap/universal-router
-    3) store our share
-    4) send assets back to the user
-    */
-    function getAssets() external payable;
+    /// @notice Executes token swaps and takes a fee.
+    /// @param inputs The input ERC20 tokens.
+    /// @param uniCommands A set of concatenated commands, each 1 byte in length.
+    /// @param uniInputs An array of byte strings containing abi encoded inputs for each command.
+    function getAssets(
+        bytes[] calldata inputs,
+        bytes calldata uniCommands,
+        bytes[] calldata uniInputs
+    ) external payable;
 
     /// @notice Sets the address that receives the fee from the funds.
     /// @dev Callable only by the current fee collector.
@@ -19,26 +20,31 @@ interface ITokenBuyer {
 
     /// @notice Sets the fee's amount from the funds.
     /// @dev Callable only by the fee collector.
-    /// @param newShare The percentual value multiplied by 100.
-    function setFeePercentx100(uint96 newShare) external;
+    /// @param newShare The percentual value expressed in basis points.
+    function setFeePercentBps(uint96 newShare) external;
+
+    /// @notice Returns the address of Uniswap's Universal Router.
+    function universalRouter() external view returns (address payable);
+
+    /// @notice Returns the address the Permit2 contract.
+    function permit2() external view returns (address);
 
     /// @notice Returns the address that receives the fee from the funds.
     function feeCollector() external view returns (address payable);
 
-    /// @notice Returns the percentage of the fee multiplied by 100.
-    function feePercentx100() external view returns (uint96);
+    /// @notice Returns the percentage of the fee expressed in basis points.
+    function feePercentBps() external view returns (uint96);
 
-    // TODO
     /// @notice Event emitted when a call to {getAssets} succeeds.
-    event AssetsTransferred();
+    event TokensBought();
 
     /// @notice Event emitted when the fee collector address is changed.
     /// @param newFeeCollector The new address of feeCollector.
     event FeeCollectorChanged(address newFeeCollector);
 
     /// @notice Event emitted when the share of the fee collector changes.
-    /// @param newShare The new value of feePercentx100.
-    event FeePercentx100Changed(uint96 newShare);
+    /// @param newShare The new value of feePercentBps.
+    event FeePercentBpsChanged(uint96 newShare);
 
     /// @notice Error thrown when a function is attempted to be called by the wrong address.
     /// @param sender The address that sent the transaction.
