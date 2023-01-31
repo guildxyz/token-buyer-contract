@@ -6,8 +6,6 @@ import "hardhat-gas-reporter";
 import "solidity-docgen";
 import "dotenv/config";
 
-// You need to export an object to set up your config.
-// Go to https://hardhat.org/config/ to learn more.
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.17",
@@ -19,7 +17,12 @@ const config: HardhatUserConfig = {
     }
   },
   networks: {
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+        blockNumber: 38478920
+      }
+    },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_ID}`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
