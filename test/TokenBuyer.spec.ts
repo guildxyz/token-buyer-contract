@@ -1,6 +1,6 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber, Contract } from "ethers";
+import { BigNumber, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
 import { encodePermit2Permit, encodeUnwrapEth, encodeV3SwapExactOut, encodeWrapEth } from "../scripts/callEncoder";
 
@@ -62,7 +62,7 @@ describe("TokenBuyer", function () {
       const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
 
       await tokenBuyer.getAssets(
-        [],
+        { tokenAddress: constants.AddressZero, amount: 0 },
         "0x0b010c", // WRAP_ETH, V3_SWAP_EXACT_OUT, UNWRAP_ETH
         [
           encodeWrapEth("0x0000000000000000000000000000000000000002", amountIn),
@@ -110,7 +110,7 @@ describe("TokenBuyer", function () {
       const feeCollectorBalance0 = await wmatic.balanceOf(feeCollector.address);
 
       await tokenBuyer.getAssets(
-        [ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [wmatic.address, amountInWithFee])],
+        { tokenAddress: wmatic.address, amount: amountInWithFee },
         "0x0a01", // PERMIT2_PERMIT, V3_SWAP_EXACT_OUT
         [
           encodePermit2Permit(
@@ -151,7 +151,7 @@ describe("TokenBuyer", function () {
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
 
       const tx = await tokenBuyer.getAssets(
-        [],
+        { tokenAddress: constants.AddressZero, amount: 0 },
         "0x0b", // WRAP_ETH
         [encodeWrapEth(wallet0.address, amountIn)],
         { value: amountInWithFee }

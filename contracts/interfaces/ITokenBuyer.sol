@@ -3,12 +3,18 @@ pragma solidity ^0.8.0;
 
 /// @title A smart contract for buying any kind of tokens and taking a fee.
 interface ITokenBuyer {
+    /// @notice A token address-amount pair.
+    struct PayToken {
+        address tokenAddress;
+        uint256 amount;
+    }
+
     /// @notice Executes token swaps and takes a fee.
-    /// @param inputs The input ERC20 tokens.
+    /// @param payToken The address and the amount of the token that's used for paying. 0 for ether.
     /// @param uniCommands A set of concatenated commands, each 1 byte in length.
     /// @param uniInputs An array of byte strings containing abi encoded inputs for each command.
     function getAssets(
-        bytes[] calldata inputs,
+        PayToken calldata payToken,
         bytes calldata uniCommands,
         bytes[] calldata uniInputs
     ) external payable;

@@ -34,37 +34,28 @@ contract TokenBuyer is ITokenBuyer, Callbacks, Signatures {
     }
 
     function getAssets(
-        bytes[] calldata tokens,
+        PayToken calldata payToken,
         bytes calldata uniCommands,
         bytes[] calldata uniInputs
     ) external payable {
+        IERC20 token = IERC20(payToken.tokenAddress);
+
         // Get the tokens from the user and send the fee collector's share
-        payable(feeCollector).sendEther(calculateFee(msg.value));
-        for (uint256 i; i < tokens.length; ) {
-            (IERC20 token, uint256 amount) = abi.decode(tokens[i], (IERC20, uint256));
-            if (!token.transferFrom(msg.sender, address(this), amount))
+        if (address(token) == address(0)) payable(feeCollector).sendEther(calculateFee(msg.value));
+        else {
+            if (!token.transferFrom(msg.sender, address(this), payToken.amount))
                 revert TransferFailed(msg.sender, address(this));
-            if (!token.transferFrom(address(this), feeCollector, calculateFee(amount)))
+            if (!token.transferFrom(address(this), feeCollector, calculateFee(payToken.amount)))
                 revert TransferFailed(address(this), feeCollector);
             token.approve(permit2, type(uint256).max);
-            unchecked {
-                ++i;
-            }
         }
 
         IUniversalRouter(universalRouter).execute{ value: address(this).balance }(uniCommands, uniInputs);
 
         // Send out any remaining tokens
-        payable(msg.sender).sendEther(address(this).balance);
-        for (uint256 i; i < tokens.length; ) {
-            (IERC20 token, ) = abi.decode(tokens[i], (IERC20, uint256));
-            uint256 contractBalance = token.balanceOf(address(this));
-            if (!token.transferFrom(address(this), msg.sender, contractBalance))
-                revert TransferFailed(address(this), msg.sender);
-            unchecked {
-                ++i;
-            }
-        }
+        if (address(token) == address(0)) payable(msg.sender).sendEther(address(this).balance);
+        else if (!token.transferFrom(address(this), msg.sender, token.balanceOf(address(this))))
+            revert TransferFailed(address(this), msg.sender);
 
         emit TokensBought();
     }
