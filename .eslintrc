@@ -12,6 +12,16 @@
     "ecmaVersion": 12
   },
   "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
     "indent": ["error", 2, { "SwitchCase": 1 }],
     "jsx-quotes": [2, "prefer-double"],
     "prefer-promise-reject-errors": 0,
@@ -23,7 +33,15 @@
     "func-names": "off",
     "no-console": "off",
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "node/no-missing-import": "off",
     "node/no-unpublished-import": "off",
     "node/no-unsupported-features/es-syntax": ["error", { "ignores": ["modules"] }]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
   }
 }

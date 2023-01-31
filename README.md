@@ -21,8 +21,10 @@ Certain actions, like deploying to a public network or verifying source code on 
 Open _scripts/deploy-tokenbuyer.ts_. Notice the top four constants:
 
 ```js
+const universalRouter = "0x..."; // Uniswap Universal Router's address.
+const permit2 = "0x..."; // Permit2's address.
 const feeCollector = "0x..."; // The address that will receive a fee from the funds.
-const feePercentx100 = 0; // The percentage of the fee multiplied by 100 (e.g 500 for a 5% cut).
+const feePercentBps = 0; // The percentage of the fee expressed in basis points (e.g 500 for a 5% cut).
 ```
 
 Edit them according to your needs.
