@@ -2,7 +2,13 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
-import { encodePermit2Permit, encodeUnwrapEth, encodeV3SwapExactOut, encodeWrapEth } from "../scripts/callEncoder";
+import {
+  encodeCryptoPunks,
+  encodePermit2Permit,
+  encodeUnwrapEth,
+  encodeV3SwapExactOut,
+  encodeWrapEth
+} from "../scripts/callEncoder";
 
 // Test accounts
 let wallet0: SignerWithAddress;
@@ -143,6 +149,38 @@ describe("TokenBuyer", function () {
       expect(contractTokenInBalance).to.eq(0);
       expect(eoaTokenOutBalance1).to.eq(eoaTokenOutBalance0.add(amountOut));
       expect(eoaTokenInBalance1).to.gte(eoaTokenInBalance0.sub(amountInWithFee));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+    });
+
+    it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
+      const cryptopunks = token.attach("0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB");
+      const amountIn = BigNumber.from("67950000000000000000");
+      const punkId = 3736;
+
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
+      const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
+
+      const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
+      const eoaPunkBalance0 = await cryptopunks.balanceOf(wallet0.address);
+      const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
+
+      await tokenBuyer.getAssets(
+        { tokenAddress: constants.AddressZero, amount: 0 },
+        "0x13", // CRYPTOPUNKS
+        [encodeCryptoPunks(punkId, wallet0.address, amountIn)],
+        { value: amountInWithFee }
+      );
+
+      const contractBalance = await ethers.provider.getBalance(tokenBuyer.address);
+      const contractPunkBalance = await cryptopunks.balanceOf(tokenBuyer.address);
+      const eoaPunkBalance1 = await cryptopunks.balanceOf(wallet0.address);
+      const eoaBalance1 = await ethers.provider.getBalance(wallet0.address);
+      const feeCollectorBalance1 = await ethers.provider.getBalance(feeCollector.address);
+
+      expect(contractBalance).to.eq(0);
+      expect(contractPunkBalance).to.eq(0);
+      expect(eoaPunkBalance1).to.eq(eoaPunkBalance0.add(1));
+      expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
     });
 

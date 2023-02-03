@@ -36,4 +36,7 @@ const encodePermit2Permit = (
     [tokenAddress, amount, expiration, nonce, spender, sigDeadline, data]
   );
 
-export { encodeWrapEth, encodeUnwrapEth, encodeV3SwapExactOut, encodePermit2Permit };
+const encodeCryptoPunks = (punkId: BigNumberish, recipient: string, value: BigNumberish) =>
+  encodeParameters(["uint256", "address", "uint256"], [punkId, recipient, value]);
+
+export { encodeWrapEth, encodeUnwrapEth, encodeV3SwapExactOut, encodePermit2Permit, encodeCryptoPunks };
