@@ -19,14 +19,14 @@ function isValidSignature(
 ) public returns (bytes4 magicValue)
 ```
 
-Returns whether the signature provided is valid for the provided hash.
+Accepts signatures from permit2, rejects otherwise.
 
 #### Parameters
 
 | Name | Type | Description |
 | :--- | :--- | :---------- |
 | `hash` | bytes32 | Hash of the data to be signed. |
-| `signature` | bytes | Signature byte array associated with _hash. |
+| `signature` | bytes | Signature byte array associated with hash. |
 
 #### Return Values
 
