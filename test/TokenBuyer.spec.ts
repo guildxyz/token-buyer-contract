@@ -2,7 +2,13 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
-import { encodePermit2Permit, encodeUnwrapEth, encodeV3SwapExactOut, encodeWrapEth } from "../scripts/callEncoder";
+import {
+  encodeCryptoPunks,
+  encodePermit2Permit,
+  encodeUnwrapEth,
+  encodeV3SwapExactOut,
+  encodeWrapEth
+} from "../scripts/callEncoder";
 
 // Test accounts
 let wallet0: SignerWithAddress;
@@ -16,8 +22,8 @@ const feePercentBps = BigNumber.from(200);
 let token: Contract;
 let tokenBuyer: Contract;
 
-// Uniswap Universal Router and Permit2 on Polygon
-const universalRouterAddress = "0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5";
+// Uniswap Universal Router and Permit2 on Ethereum
+const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
 describe("TokenBuyer", function () {
@@ -48,9 +54,9 @@ describe("TokenBuyer", function () {
     });
 
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
-      const usdc = token.attach("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174");
-      const amountIn = BigNumber.from("1955340553184923583");
-      const amountOut = ethers.utils.parseUnits("1.95", 6);
+      const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
+      const amountIn = BigNumber.from("15343306352920000");
+      const amountOut = ethers.utils.parseUnits("25", 6);
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
       const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
@@ -70,7 +76,7 @@ describe("TokenBuyer", function () {
             wallet0.address,
             amountOut,
             amountIn,
-            "0x2791bca1f2de4661ed88a30c99a7a9449aa841740001f40d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb480001f4c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             false
           ),
           encodeUnwrapEth(wallet0.address, 0)
@@ -87,38 +93,38 @@ describe("TokenBuyer", function () {
       expect(contractERC20Balance).to.eq(0);
       expect(contractBalance).to.eq(0);
       expect(eoaERC20Balance1).to.eq(eoaERC20Balance0.add(amountOut));
-      expect(eoaBalance1).to.gte(eoaBalance0.sub(amountInWithFee));
+      expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
     });
 
     it("should swap ERC20 to ERC20 and distribute tokens correctly", async () => {
-      const usdc = token.attach("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174");
-      const wmatic = token.attach("0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270");
-      const amountIn = BigNumber.from("1955340553184923583");
-      const amountOut = ethers.utils.parseUnits("1.95", 6);
+      const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
+      const weth = token.attach("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
+      const amountIn = BigNumber.from("15343306352920000");
+      const amountOut = ethers.utils.parseUnits("25", 6);
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
       const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
       // This won't pass: we lose the last 4 digits because of poor precision
       // expect(amountIn).to.eq(amountInCalculated);
 
-      await wallet0.sendTransaction({ to: wmatic.address, value: amountInWithFee });
-      await wmatic.approve(tokenBuyer.address, amountInWithFee);
+      await wallet0.sendTransaction({ to: weth.address, value: amountInWithFee });
+      await weth.approve(tokenBuyer.address, amountInWithFee);
 
       const eoaTokenOutBalance0 = await usdc.balanceOf(wallet0.address);
-      const eoaTokenInBalance0 = await wmatic.balanceOf(wallet0.address);
-      const feeCollectorBalance0 = await wmatic.balanceOf(feeCollector.address);
+      const eoaTokenInBalance0 = await weth.balanceOf(wallet0.address);
+      const feeCollectorBalance0 = await weth.balanceOf(feeCollector.address);
 
       await tokenBuyer.getAssets(
-        { tokenAddress: wmatic.address, amount: amountInWithFee },
+        { tokenAddress: weth.address, amount: amountInWithFee },
         "0x0a01", // PERMIT2_PERMIT, V3_SWAP_EXACT_OUT
         [
           encodePermit2Permit(
-            wmatic.address,
+            weth.address,
             "1461501637330902918203684832716283019655932542975",
             1706751423,
             0,
-            "0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5",
+            universalRouterAddress,
             "1704161223",
             // eslint-disable-next-line max-len
             "0x43d422359b743755a8c8de3cd7b54c20c381084ce597d8135a3051382c96a2344d6d236a3f4a685c91bb036780ca7f90d69cbe9df8982ec022b6990f7f9b22751c"
@@ -127,17 +133,17 @@ describe("TokenBuyer", function () {
             wallet0.address,
             amountOut,
             amountIn,
-            "0x2791bca1f2de4661ed88a30c99a7a9449aa841740001f40d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb480001f4c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             true
           )
         ]
       );
 
       const contractTokenOutBalance = await usdc.balanceOf(tokenBuyer.address);
-      const contractTokenInBalance = await wmatic.balanceOf(tokenBuyer.address);
+      const contractTokenInBalance = await weth.balanceOf(tokenBuyer.address);
       const eoaTokenOutBalance1 = await usdc.balanceOf(wallet0.address);
-      const eoaTokenInBalance1 = await wmatic.balanceOf(wallet0.address);
-      const feeCollectorBalance1 = await wmatic.balanceOf(feeCollector.address);
+      const eoaTokenInBalance1 = await weth.balanceOf(wallet0.address);
+      const feeCollectorBalance1 = await weth.balanceOf(feeCollector.address);
 
       expect(contractTokenOutBalance).to.eq(0);
       expect(contractTokenInBalance).to.eq(0);
@@ -146,8 +152,40 @@ describe("TokenBuyer", function () {
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
     });
 
+    it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
+      const cryptopunks = token.attach("0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB");
+      const amountIn = BigNumber.from("67950000000000000000");
+      const punkId = 3736;
+
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
+      const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
+
+      const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
+      const eoaPunkBalance0 = await cryptopunks.balanceOf(wallet0.address);
+      const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
+
+      await tokenBuyer.getAssets(
+        { tokenAddress: constants.AddressZero, amount: 0 },
+        "0x13", // CRYPTOPUNKS
+        [encodeCryptoPunks(punkId, wallet0.address, amountIn)],
+        { value: amountInWithFee }
+      );
+
+      const contractBalance = await ethers.provider.getBalance(tokenBuyer.address);
+      const contractPunkBalance = await cryptopunks.balanceOf(tokenBuyer.address);
+      const eoaPunkBalance1 = await cryptopunks.balanceOf(wallet0.address);
+      const eoaBalance1 = await ethers.provider.getBalance(wallet0.address);
+      const feeCollectorBalance1 = await ethers.provider.getBalance(feeCollector.address);
+
+      expect(contractBalance).to.eq(0);
+      expect(contractPunkBalance).to.eq(0);
+      expect(eoaPunkBalance1).to.eq(eoaPunkBalance0.add(1));
+      expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+    });
+
     it("should emit a TokensBought event", async () => {
-      const amountIn = BigNumber.from("1955340553184923583");
+      const amountIn = BigNumber.from("1955340553184920000");
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
 
       const tx = await tokenBuyer.getAssets(

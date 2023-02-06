@@ -60,5 +60,5 @@ jobs:
 
       - name: Run tests
         env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+          INFURA_ID: ${{ secrets.INFURA_ID }}
         run: npm test
