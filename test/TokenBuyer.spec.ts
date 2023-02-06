@@ -244,24 +244,6 @@ describe("TokenBuyer", function () {
         .withArgs(wallet0.address, feeCollector.address);
     });
 
-    it("should give ether", async () => {
-      const amount = ethers.utils.parseEther("0.69");
-
-      await wallet0.sendTransaction({ to: tokenBuyer.address, value: amount });
-
-      const balance0 = await ethers.provider.getBalance(wallet0.address);
-      const contractBalance0 = await ethers.provider.getBalance(tokenBuyer.address);
-
-      await tokenBuyer.connect(feeCollector).sweep(constants.AddressZero, wallet0.address, amount);
-
-      const balance1 = await ethers.provider.getBalance(wallet0.address);
-      const contractBalance1 = await ethers.provider.getBalance(tokenBuyer.address);
-
-      expect(contractBalance0).to.not.eq(0);
-      expect(contractBalance1).to.eq(0);
-      expect(balance1).to.eq(balance0.add(amount));
-    });
-
     it("should give ERC20", async () => {
       const amount = ethers.utils.parseEther("0.69");
 
@@ -283,11 +265,11 @@ describe("TokenBuyer", function () {
     it("should emit a TokensSweeped event", async () => {
       const amount = ethers.utils.parseEther("0.69");
 
-      await wallet0.sendTransaction({ to: tokenBuyer.address, value: amount });
+      await token.transfer(tokenBuyer.address, amount);
 
-      const tx = tokenBuyer.connect(feeCollector).sweep(constants.AddressZero, wallet0.address, amount);
+      const tx = tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, amount);
 
-      await expect(tx).to.emit(tokenBuyer, "TokensSweeped").withArgs(constants.AddressZero, wallet0.address, amount);
+      await expect(tx).to.emit(tokenBuyer, "TokensSweeped").withArgs(token.address, wallet0.address, amount);
     });
   });
 });

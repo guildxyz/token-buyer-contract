@@ -52,8 +52,7 @@ contract TokenBuyer is ITokenBuyer, Signatures {
         IUniversalRouter(universalRouter).execute{ value: address(this).balance }(uniCommands, uniInputs);
 
         // Send out any remaining tokens
-        if (address(token) == address(0)) payable(msg.sender).sendEther(address(this).balance);
-        else if (!token.transfer(msg.sender, token.balanceOf(address(this))))
+        if (address(token) != address(0) && !token.transfer(msg.sender, token.balanceOf(address(this))))
             revert TransferFailed(address(this), msg.sender);
 
         emit TokensBought();
@@ -78,13 +77,7 @@ contract TokenBuyer is ITokenBuyer, Signatures {
 
     function sweep(address token, address payable recipient, uint256 amount) external {
         if (msg.sender != feeCollector) revert AccessDenied(msg.sender, feeCollector);
-
-        if (token == address(0)) recipient.sendEther(amount);
-        else if (!IERC20(token).transfer(recipient, amount)) revert TransferFailed(address(this), feeCollector);
-
+        if (!IERC20(token).transfer(recipient, amount)) revert TransferFailed(address(this), feeCollector);
         emit TokensSweeped(token, recipient, amount);
     }
-
-    // solhint-disable-next-line no-empty-blocks
-    receive() external payable {}
 }
