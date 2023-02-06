@@ -56,6 +56,11 @@ interface ITokenBuyer {
     /// @param sender The address that sent the transaction.
     /// @param owner The address that is allowed to call the function.
     error AccessDenied(address sender, address owner);
+    /// @notice Event emitted when tokens are sweeped from the contract.
+    /// @param token The address of the token to sweep. 0 for ether.
+    /// @param recipient The recipient of the tokens.
+    /// @param amount The amount of the tokens to sweep.
+    event TokensSweeped(IERC20 token, address payable recipient, uint256 amount);
 
     /// @notice Error thrown when an ERC20 transfer failed.
     /// @param from The sender of the token.
