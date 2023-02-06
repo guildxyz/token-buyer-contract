@@ -43,7 +43,7 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
                 revert TransferFailed(msg.sender, address(this));
             if (!token.transfer(feeCollector, calculateFee(address(token), payToken.amount)))
                 revert TransferFailed(address(this), feeCollector);
-            token.approve(permit2, type(uint256).max);
+            if (token.allowance(address(this), permit2) < payToken.amount) token.approve(permit2, type(uint256).max);
         }
 
         IUniversalRouter(universalRouter).execute{ value: address(this).balance }(uniCommands, uniInputs);
