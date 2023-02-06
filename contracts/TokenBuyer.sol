@@ -76,11 +76,11 @@ contract TokenBuyer is ITokenBuyer, Signatures {
         return amount - ((amount / (10000 + feePercentBps)) * 10000);
     }
 
-    function sweep(IERC20 token, address payable recipient, uint256 amount) external {
+    function sweep(address token, address payable recipient, uint256 amount) external {
         if (msg.sender != feeCollector) revert AccessDenied(msg.sender, feeCollector);
 
-        if (address(token) == address(0)) recipient.sendEther(amount);
-        else if (!token.transfer(recipient, amount)) revert TransferFailed(address(this), feeCollector);
+        if (token == address(0)) recipient.sendEther(amount);
+        else if (!IERC20(token).transfer(recipient, amount)) revert TransferFailed(address(this), feeCollector);
 
         emit TokensSweeped(token, recipient, amount);
     }
