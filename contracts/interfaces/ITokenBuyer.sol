@@ -29,6 +29,12 @@ interface ITokenBuyer {
     /// @param newShare The percentual value expressed in basis points.
     function setFeePercentBps(uint96 newShare) external;
 
+    /// @notice Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
+    /// @param token The address of the token to sweep. 0 for ether.
+    /// @param recipient The recipient of the tokens.
+    /// @param amount The amount of the tokens to sweep.
+    function sweep(address token, address payable recipient, uint256 amount) external;
+
     /// @notice Returns the address of Uniswap's Universal Router.
     function universalRouter() external view returns (address payable);
 
@@ -56,6 +62,12 @@ interface ITokenBuyer {
     /// @param sender The address that sent the transaction.
     /// @param owner The address that is allowed to call the function.
     error AccessDenied(address sender, address owner);
+
+    /// @notice Event emitted when tokens are sweeped from the contract.
+    /// @param token The address of the token sweeped. 0 for ether.
+    /// @param recipient The recipient of the tokens.
+    /// @param amount The amount of the tokens sweeped.
+    event TokensSweeped(address token, address payable recipient, uint256 amount);
 
     /// @notice Error thrown when an ERC20 transfer failed.
     /// @param from The sender of the token.

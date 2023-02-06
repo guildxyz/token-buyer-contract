@@ -236,4 +236,40 @@ describe("TokenBuyer", function () {
       await expect(tx).to.emit(tokenBuyer, "FeePercentBpsChanged").withArgs("100");
     });
   });
+
+  context("sweep tokens", async () => {
+    it("should revert if it's attempted to be called by anyone else", async () => {
+      await expect(tokenBuyer.sweep(constants.AddressZero, wallet0.address, 0))
+        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
+        .withArgs(wallet0.address, feeCollector.address);
+    });
+
+    it("should give ERC20", async () => {
+      const amount = ethers.utils.parseEther("0.69");
+
+      await token.transfer(tokenBuyer.address, amount);
+
+      const balance0 = await token.balanceOf(wallet0.address);
+      const contractBalance0 = await token.balanceOf(tokenBuyer.address);
+
+      await tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, amount);
+
+      const balance1 = await token.balanceOf(wallet0.address);
+      const contractBalance1 = await token.balanceOf(tokenBuyer.address);
+
+      expect(contractBalance0).to.not.eq(0);
+      expect(contractBalance1).to.eq(0);
+      expect(balance1).to.eq(balance0.add(amount));
+    });
+
+    it("should emit a TokensSweeped event", async () => {
+      const amount = ethers.utils.parseEther("0.69");
+
+      await token.transfer(tokenBuyer.address, amount);
+
+      const tx = tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, amount);
+
+      await expect(tx).to.emit(tokenBuyer, "TokensSweeped").withArgs(token.address, wallet0.address, amount);
+    });
+  });
 });
