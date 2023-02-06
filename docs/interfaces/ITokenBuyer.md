@@ -24,41 +24,25 @@ Executes token swaps and takes a fee.
 | `uniCommands` | bytes | A set of concatenated commands, each 1 byte in length. |
 | `uniInputs` | bytes[] | An array of byte strings containing abi encoded inputs for each command. |
 
-### setFeeCollector
+### sweep
 
 ```solidity
-function setFeeCollector(
-    address payable newFeeCollector
+function sweep(
+    address token,
+    address payable recipient,
+    uint256 amount
 ) external
 ```
 
-Sets the address that receives the fee from the funds.
-
-Callable only by the current fee collector.
+Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
 
 #### Parameters
 
 | Name | Type | Description |
 | :--- | :--- | :---------- |
-| `newFeeCollector` | address payable | The new address of feeCollector. |
-
-### setFeePercentBps
-
-```solidity
-function setFeePercentBps(
-    uint96 newShare
-) external
-```
-
-Sets the fee's amount from the funds.
-
-Callable only by the fee collector.
-
-#### Parameters
-
-| Name | Type | Description |
-| :--- | :--- | :---------- |
-| `newShare` | uint96 | The percentual value expressed in basis points. |
+| `token` | address | The address of the token to sweep. 0 for ether. |
+| `recipient` | address payable | The recipient of the tokens. |
+| `amount` | uint256 | The amount of the tokens to sweep. |
 
 ### universalRouter
 
@@ -76,22 +60,6 @@ function permit2() external returns (address)
 
 Returns the address the Permit2 contract.
 
-### feeCollector
-
-```solidity
-function feeCollector() external returns (address payable)
-```
-
-Returns the address that receives the fee from the funds.
-
-### feePercentBps
-
-```solidity
-function feePercentBps() external returns (uint96)
-```
-
-Returns the percentage of the fee expressed in basis points.
-
 ## Events
 
 ### TokensBought
@@ -103,53 +71,29 @@ event TokensBought(
 
 Event emitted when a call to {getAssets} succeeds.
 
-### FeeCollectorChanged
+### TokensSweeped
 
 ```solidity
-event FeeCollectorChanged(
-    address newFeeCollector
+event TokensSweeped(
+    address token,
+    address payable recipient,
+    uint256 amount
 )
 ```
 
-Event emitted when the fee collector address is changed.
+Event emitted when tokens are sweeped from the contract.
+
+Callable only by the current fee collector.
 
 #### Parameters
 
 | Name | Type | Description |
 | :--- | :--- | :---------- |
-| `newFeeCollector` | address | The new address of feeCollector. |
-### FeePercentBpsChanged
-
-```solidity
-event FeePercentBpsChanged(
-    uint96 newShare
-)
-```
-
-Event emitted when the share of the fee collector changes.
-
-#### Parameters
-
-| Name | Type | Description |
-| :--- | :--- | :---------- |
-| `newShare` | uint96 | The new value of feePercentBps. |
+| `token` | address | The address of the token sweeped. 0 for ether. |
+| `recipient` | address payable | The recipient of the tokens. |
+| `amount` | uint256 | The amount of the tokens sweeped. |
 
 ## Custom errors
-
-### AccessDenied
-
-```solidity
-error AccessDenied(address sender, address owner)
-```
-
-Error thrown when a function is attempted to be called by the wrong address.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| sender | address | The address that sent the transaction. |
-| owner | address | The address that is allowed to call the function. |
 
 ### TransferFailed
 

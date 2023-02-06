@@ -17,6 +17,8 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
 
     /// @param universalRouter_ The address of Uniswap's Universal router.
     /// @param universalRouter_ The address of the Permit2 contract.
+    /// @param feeCollector_ The address that will receive a fee from the funds.
+    /// @param feePercentBps_ The percentage of the fee expressed in basis points (e.g 500 for a 5% cut).
     constructor(
         address payable universalRouter_,
         address permit2_,
