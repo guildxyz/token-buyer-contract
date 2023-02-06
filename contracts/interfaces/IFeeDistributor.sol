@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IFeeDistributor {
-    /// @notice The base fee of a swap if it's 1% is smaller than this.
+    /// @notice The base fee of a swap on top of the percentual fee.
     /// @param token The token whose base fee is queried.
     /// @return baseFee The amount of the fee in wei.
     function baseFee(address token) external returns (uint256 baseFee);
