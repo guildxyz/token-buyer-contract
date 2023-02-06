@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import { IFeeDistributor } from "./IFeeDistributor.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 /// @title A smart contract for buying any kind of tokens and taking a fee.
-interface ITokenBuyer {
+interface ITokenBuyer is IFeeDistributor {
     /// @notice A token address-amount pair.
     struct PayToken {
         address tokenAddress;
@@ -19,16 +22,6 @@ interface ITokenBuyer {
         bytes[] calldata uniInputs
     ) external payable;
 
-    /// @notice Sets the address that receives the fee from the funds.
-    /// @dev Callable only by the current fee collector.
-    /// @param newFeeCollector The new address of feeCollector.
-    function setFeeCollector(address payable newFeeCollector) external;
-
-    /// @notice Sets the fee's amount from the funds.
-    /// @dev Callable only by the fee collector.
-    /// @param newShare The percentual value expressed in basis points.
-    function setFeePercentBps(uint96 newShare) external;
-
     /// @notice Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
     /// @param token The address of the token to sweep. 0 for ether.
     /// @param recipient The recipient of the tokens.
@@ -41,29 +34,11 @@ interface ITokenBuyer {
     /// @notice Returns the address the Permit2 contract.
     function permit2() external view returns (address);
 
-    /// @notice Returns the address that receives the fee from the funds.
-    function feeCollector() external view returns (address payable);
-
-    /// @notice Returns the percentage of the fee expressed in basis points.
-    function feePercentBps() external view returns (uint96);
-
     /// @notice Event emitted when a call to {getAssets} succeeds.
     event TokensBought();
 
-    /// @notice Event emitted when the fee collector address is changed.
-    /// @param newFeeCollector The new address of feeCollector.
-    event FeeCollectorChanged(address newFeeCollector);
-
-    /// @notice Event emitted when the share of the fee collector changes.
-    /// @param newShare The new value of feePercentBps.
-    event FeePercentBpsChanged(uint96 newShare);
-
-    /// @notice Error thrown when a function is attempted to be called by the wrong address.
-    /// @param sender The address that sent the transaction.
-    /// @param owner The address that is allowed to call the function.
-    error AccessDenied(address sender, address owner);
-
     /// @notice Event emitted when tokens are sweeped from the contract.
+    /// @dev Callable only by the current fee collector.
     /// @param token The address of the token sweeped. 0 for ether.
     /// @param recipient The recipient of the tokens.
     /// @param amount The amount of the tokens sweeped.
