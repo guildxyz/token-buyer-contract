@@ -35,11 +35,11 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
         IERC20 token = IERC20(payToken.tokenAddress);
 
         // Get the tokens from the user and send the fee collector's share
-        if (address(token) == address(0)) feeCollector.sendEther(calculateFee(msg.value));
+        if (address(token) == address(0)) feeCollector.sendEther(calculateFee(address(0), msg.value));
         else {
             if (!token.transferFrom(msg.sender, address(this), payToken.amount))
                 revert TransferFailed(msg.sender, address(this));
-            if (!token.transfer(feeCollector, calculateFee(payToken.amount)))
+            if (!token.transfer(feeCollector, calculateFee(address(token), payToken.amount)))
                 revert TransferFailed(address(this), feeCollector);
             token.approve(permit2, type(uint256).max);
         }

@@ -38,6 +38,7 @@ interface ITokenBuyer is IFeeDistributor {
     event TokensBought();
 
     /// @notice Event emitted when tokens are sweeped from the contract.
+    /// @dev Callable only by the current fee collector.
     /// @param token The address of the token sweeped. 0 for ether.
     /// @param recipient The recipient of the tokens.
     /// @param amount The amount of the tokens sweeped.

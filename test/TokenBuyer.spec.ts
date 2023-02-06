@@ -17,6 +17,7 @@ let randomWallet: SignerWithAddress;
 // Sample collector details
 let feeCollector: SignerWithAddress;
 const feePercentBps = BigNumber.from(200);
+const baseFeeEther = ethers.utils.parseEther("0.0005");
 
 // Contract instances
 let token: Contract;
@@ -27,13 +28,15 @@ const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
 describe("TokenBuyer", function () {
-  this.beforeAll("deploy contracts", async () => {
+  this.beforeAll("get accounts", async () => {
     [wallet0, feeCollector, randomWallet] = await ethers.getSigners();
   });
 
   this.beforeEach("deploy new contracts", async () => {
     const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
     tokenBuyer = await TokenBuyer.deploy(universalRouterAddress, permit2Address, feeCollector.address, feePercentBps);
+
+    await tokenBuyer.connect(feeCollector).setBaseFee(constants.AddressZero, baseFeeEther);
 
     const ERC20 = await ethers.getContractFactory("MockERC20");
     token = await ERC20.deploy();
@@ -49,17 +52,13 @@ describe("TokenBuyer", function () {
   });
 
   context("paying fees", async () => {
-    beforeEach("approve tokens", async () => {
-      await token.approve(feeCollector.address, ethers.constants.MaxUint256);
-    });
-
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
       const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
       const amountIn = BigNumber.from("15343306352920000");
       const amountOut = ethers.utils.parseUnits("25", 6);
 
-      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
-      const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
       // This won't pass: we lose the last 4 digits because of poor precision
       // expect(amountIn).to.eq(amountInCalculated);
 
@@ -157,8 +156,8 @@ describe("TokenBuyer", function () {
       const amountIn = BigNumber.from("67950000000000000000");
       const punkId = 3736;
 
-      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
-      const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
 
       const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
       const eoaPunkBalance0 = await cryptopunks.balanceOf(wallet0.address);
@@ -186,7 +185,7 @@ describe("TokenBuyer", function () {
 
     it("should emit a TokensBought event", async () => {
       const amountIn = BigNumber.from("1955340553184920000");
-      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
 
       const tx = await tokenBuyer.getAssets(
         { tokenAddress: constants.AddressZero, amount: 0 },
@@ -196,6 +195,26 @@ describe("TokenBuyer", function () {
       );
 
       await expect(tx).to.emit(tokenBuyer, "TokensBought");
+    });
+  });
+
+  context("the base fee", async () => {
+    it("should revert if it's attempted to be changed by anyone else", async () => {
+      await expect(tokenBuyer.setBaseFee(token.address, 10))
+        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
+        .withArgs(wallet0.address, feeCollector.address);
+    });
+
+    it("should change the fee", async () => {
+      const feeAmount = ethers.utils.parseEther("0.003");
+      await tokenBuyer.connect(feeCollector).setBaseFee(token.address, feeAmount);
+      const newFee = await tokenBuyer.baseFee(token.address);
+      expect(newFee).to.eq(feeAmount);
+    });
+
+    it("should emit a BaseFeeChanged event", async () => {
+      const tx = tokenBuyer.connect(feeCollector).setBaseFee(token.address, 10);
+      await expect(tx).to.emit(tokenBuyer, "BaseFeeChanged").withArgs(token.address, 10);
     });
   });
 
