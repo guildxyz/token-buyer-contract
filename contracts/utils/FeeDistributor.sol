@@ -14,14 +14,17 @@ contract FeeDistributor is IFeeDistributor {
         feePercentBps = feePercentBps_;
     }
 
-    function setFeeCollector(address payable newFeeCollector) external {
+    modifier onlyFeeCollector() {
         if (msg.sender != feeCollector) revert AccessDenied(msg.sender, feeCollector);
+        _;
+    }
+
+    function setFeeCollector(address payable newFeeCollector) external onlyFeeCollector {
         feeCollector = newFeeCollector;
         emit FeeCollectorChanged(newFeeCollector);
     }
 
-    function setFeePercentBps(uint96 newShare) external {
-        if (msg.sender != feeCollector) revert AccessDenied(msg.sender, feeCollector);
+    function setFeePercentBps(uint96 newShare) external onlyFeeCollector {
         feePercentBps = newShare;
         emit FeePercentBpsChanged(newShare);
     }

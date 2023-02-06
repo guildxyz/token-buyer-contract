@@ -53,8 +53,7 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
         emit TokensBought();
     }
 
-    function sweep(address token, address payable recipient, uint256 amount) external {
-        if (msg.sender != feeCollector) revert AccessDenied(msg.sender, feeCollector);
+    function sweep(address token, address payable recipient, uint256 amount) external onlyFeeCollector {
         if (!IERC20(token).transfer(recipient, amount)) revert TransferFailed(address(this), feeCollector);
         emit TokensSweeped(token, recipient, amount);
     }
