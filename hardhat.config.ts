@@ -50,6 +50,10 @@ const config: HardhatUserConfig = {
     gnosis: {
       url: "https://rpc.gnosischain.com",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    arbitrum: {
+      url: "https://arbitrum.blockpi.network/v1/rpc/public",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     }
   },
   gasReporter: {
