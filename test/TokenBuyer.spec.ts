@@ -125,8 +125,7 @@ describe("TokenBuyer", function () {
             0,
             universalRouterAddress,
             "1704161223",
-            // eslint-disable-next-line max-len
-            "0x43d422359b743755a8c8de3cd7b54c20c381084ce597d8135a3051382c96a2344d6d236a3f4a685c91bb036780ca7f90d69cbe9df8982ec022b6990f7f9b22751c"
+            "0x00"
           ),
           encodeV3SwapExactOut(
             wallet0.address,
