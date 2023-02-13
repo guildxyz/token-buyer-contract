@@ -13,10 +13,12 @@ interface ITokenBuyer is IFeeDistributor {
     }
 
     /// @notice Executes token swaps and takes a fee.
+    /// @param guildId The id of the guild where the payment was made. Used only for analytics.
     /// @param payToken The address and the amount of the token that's used for paying. 0 for ether.
     /// @param uniCommands A set of concatenated commands, each 1 byte in length.
     /// @param uniInputs An array of byte strings containing abi encoded inputs for each command.
     function getAssets(
+        uint256 guildId,
         PayToken calldata payToken,
         bytes calldata uniCommands,
         bytes[] calldata uniInputs
@@ -35,7 +37,8 @@ interface ITokenBuyer is IFeeDistributor {
     function permit2() external view returns (address);
 
     /// @notice Event emitted when a call to {getAssets} succeeds.
-    event TokensBought();
+    /// @param guildId The id of the guild where the payment was made. Used only for analytics.
+    event TokensBought(uint256 guildId);
 
     /// @notice Event emitted when tokens are sweeped from the contract.
     /// @dev Callable only by the current fee collector.

@@ -18,6 +18,7 @@ let randomWallet: SignerWithAddress;
 let feeCollector: SignerWithAddress;
 const feePercentBps = BigNumber.from(200);
 const baseFeeEther = ethers.utils.parseEther("0.0005");
+const guildId = 1;
 
 // Contract instances
 let token: Contract;
@@ -67,6 +68,7 @@ describe("TokenBuyer", function () {
       const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
 
       await tokenBuyer.getAssets(
+        guildId,
         { tokenAddress: constants.AddressZero, amount: 0 },
         "0x0b010c", // WRAP_ETH, V3_SWAP_EXACT_OUT, UNWRAP_ETH
         [
@@ -115,6 +117,7 @@ describe("TokenBuyer", function () {
       const feeCollectorBalance0 = await weth.balanceOf(feeCollector.address);
 
       await tokenBuyer.getAssets(
+        guildId,
         { tokenAddress: weth.address, amount: amountInWithFee },
         "0x0a01", // PERMIT2_PERMIT, V3_SWAP_EXACT_OUT
         [
@@ -163,6 +166,7 @@ describe("TokenBuyer", function () {
       const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
 
       await tokenBuyer.getAssets(
+        guildId,
         { tokenAddress: constants.AddressZero, amount: 0 },
         "0x13", // CRYPTOPUNKS
         [encodeCryptoPunks(punkId, wallet0.address, amountIn)],
@@ -187,13 +191,14 @@ describe("TokenBuyer", function () {
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
 
       const tx = await tokenBuyer.getAssets(
+        guildId,
         { tokenAddress: constants.AddressZero, amount: 0 },
         "0x0b", // WRAP_ETH
         [encodeWrapEth(wallet0.address, amountIn)],
         { value: amountInWithFee }
       );
 
-      await expect(tx).to.emit(tokenBuyer, "TokensBought");
+      await expect(tx).to.emit(tokenBuyer, "TokensBought").withArgs(guildId);
     });
   });
 

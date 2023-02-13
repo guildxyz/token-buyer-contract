@@ -8,6 +8,7 @@ A smart contract for buying any kind of tokens and taking a fee.
 
 ```solidity
 function getAssets(
+    uint256 guildId,
     struct ITokenBuyer.PayToken payToken,
     bytes uniCommands,
     bytes[] uniInputs
@@ -20,6 +21,7 @@ Executes token swaps and takes a fee.
 
 | Name | Type | Description |
 | :--- | :--- | :---------- |
+| `guildId` | uint256 | The id of the guild where the payment was made. Used only for analytics. |
 | `payToken` | struct ITokenBuyer.PayToken | The address and the amount of the token that's used for paying. 0 for ether. |
 | `uniCommands` | bytes | A set of concatenated commands, each 1 byte in length. |
 | `uniInputs` | bytes[] | An array of byte strings containing abi encoded inputs for each command. |
@@ -66,11 +68,17 @@ Returns the address the Permit2 contract.
 
 ```solidity
 event TokensBought(
+    uint256 guildId
 )
 ```
 
 Event emitted when a call to {getAssets} succeeds.
 
+#### Parameters
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+| `guildId` | uint256 | The id of the guild where the payment was made. Used only for analytics. |
 ### TokensSweeped
 
 ```solidity

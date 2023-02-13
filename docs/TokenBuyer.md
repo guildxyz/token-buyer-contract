@@ -46,6 +46,7 @@ constructor(
 
 ```solidity
 function getAssets(
+    uint256 guildId,
     struct ITokenBuyer.PayToken payToken,
     bytes uniCommands,
     bytes[] uniInputs
@@ -58,6 +59,7 @@ Executes token swaps and takes a fee.
 
 | Name | Type | Description |
 | :--- | :--- | :---------- |
+| `guildId` | uint256 | The id of the guild where the payment was made. Used only for analytics. |
 | `payToken` | struct ITokenBuyer.PayToken | The address and the amount of the token that's used for paying. 0 for ether. |
 | `uniCommands` | bytes | A set of concatenated commands, each 1 byte in length. |
 | `uniInputs` | bytes[] | An array of byte strings containing abi encoded inputs for each command. |

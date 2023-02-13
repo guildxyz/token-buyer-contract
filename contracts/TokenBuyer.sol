@@ -30,6 +30,7 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
     }
 
     function getAssets(
+        uint256 guildId,
         PayToken calldata payToken,
         bytes calldata uniCommands,
         bytes[] calldata uniInputs
@@ -52,7 +53,7 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
         if (address(token) != address(0) && !token.transfer(msg.sender, token.balanceOf(address(this))))
             revert TransferFailed(address(this), msg.sender);
 
-        emit TokensBought();
+        emit TokensBought(guildId);
     }
 
     function sweep(address token, address payable recipient, uint256 amount) external onlyFeeCollector {
