@@ -8,7 +8,6 @@ const feePercentBps = 0; // The percentage of the fee expressed in basis points 
 
 async function main() {
   const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
-  const tokenBuyer = await TokenBuyer.deploy(universalRouter, permit2, feeCollector, feePercentBps);
 
   console.log(
     `Deploying contract to ${
@@ -16,6 +15,7 @@ async function main() {
     }...`
   );
 
+  const tokenBuyer = await TokenBuyer.deploy(universalRouter, permit2, feeCollector, feePercentBps);
   await tokenBuyer.deployed();
 
   console.log("TokenBuyer deployed to:", tokenBuyer.address);
