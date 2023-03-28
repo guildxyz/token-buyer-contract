@@ -26,6 +26,37 @@ Executes token swaps and takes a fee.
 | `uniCommands` | bytes | A set of concatenated commands, each 1 byte in length. |
 | `uniInputs` | bytes[] | An array of byte strings containing abi encoded inputs for each command. |
 
+### bridgeAssets
+
+```solidity
+function bridgeAssets(
+    uint256 guildId,
+    address contractL2,
+    uint256 l2Value,
+    bytes forwardedCalldata,
+    uint256 l2GasLimit,
+    uint256 l2GasPerPubdataByteLimit,
+    bytes[] factoryDeps,
+    address refundRecipient
+) external
+```
+
+Bridges tokens to ZkSync and takes a fee.
+
+#### Parameters
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+| `guildId` | uint256 | The id of the guild where the payment was made. Used only for analytics. |
+| `contractL2` | address | The L2 receiver address. |
+| `l2Value` | uint256 | `msg.value` of L2 transaction. |
+| `forwardedCalldata` | bytes | The input of the L2 transaction. |
+| `l2GasLimit` | uint256 | Maximum amount of L2 gas that transaction can consume during execution on L2. |
+| `l2GasPerPubdataByteLimit` | uint256 | The max amount L2 gas that the operator may charge for single byte of pubdata. |
+| `factoryDeps` | bytes[] | An array of L2 bytecodes that will be marked as known on L2. |
+| `refundRecipient` | address | The address on L2 that will receive the refund for the transaction.
+If the transaction fails, it will also be the address to receive `_l2Value`. |
+
 ### sweep
 
 ```solidity
@@ -64,6 +95,25 @@ Returns the address the Permit2 contract.
 
 ## Events
 
+### TokensBridged
+
+```solidity
+event TokensBridged(
+    uint256 guildId,
+    address sender,
+    bytes32 canonicalTxHash
+)
+```
+
+Event emitted when a call to {bridgeAssets} succeeds.
+
+#### Parameters
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+| `guildId` | uint256 | The id of the guild where the payment was made. Used only for analytics. |
+| `sender` | address | The sender of the transaction. |
+| `canonicalTxHash` | bytes32 | The hash of the requested L2 transaction. |
 ### TokensBought
 
 ```solidity
