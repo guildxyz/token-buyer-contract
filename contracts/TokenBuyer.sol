@@ -5,6 +5,7 @@ import { FeeDistributor } from "./utils/FeeDistributor.sol";
 import { Signatures } from "./utils/Signatures.sol";
 import { ITokenBuyer } from "./interfaces/ITokenBuyer.sol";
 import { IUniversalRouter } from "./interfaces/external/IUniversalRouter.sol";
+import { IZkSyncBridge } from "./interfaces/external/IZkSyncBridge.sol";
 import { LibAddress } from "./lib/LibAddress.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -14,19 +15,23 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
 
     address payable public immutable universalRouter;
     address public immutable permit2;
+    address public immutable zkSyncBridge;
 
     /// @param universalRouter_ The address of Uniswap's Universal router.
-    /// @param universalRouter_ The address of the Permit2 contract.
+    /// @param permit2_ The address of the Permit2 contract.
+    /// @param zkSyncBridge_ The address of the ZkSync bridge contract.
     /// @param feeCollector_ The address that will receive a fee from the funds.
     /// @param feePercentBps_ The percentage of the fee expressed in basis points (e.g 500 for a 5% cut).
     constructor(
         address payable universalRouter_,
         address permit2_,
+        address zkSyncBridge_,
         address payable feeCollector_,
         uint96 feePercentBps_
     ) FeeDistributor(feeCollector_, feePercentBps_) {
         universalRouter = universalRouter_;
         permit2 = permit2_;
+        zkSyncBridge = zkSyncBridge_;
     }
 
     function getAssets(
@@ -54,6 +59,31 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
             revert TransferFailed(address(this), msg.sender);
 
         emit TokensBought(guildId);
+    }
+
+    function bridgeAssets(
+        uint256 guildId,
+        address contractL2,
+        uint256 l2Value,
+        bytes calldata forwardedCalldata,
+        uint256 l2GasLimit,
+        uint256 l2GasPerPubdataByteLimit,
+        bytes[] calldata factoryDeps,
+        address refundRecipient
+    ) external payable {
+        feeCollector.sendEther(calculateFee(address(0), msg.value));
+
+        bytes32 canonicalTxHash = IZkSyncBridge(zkSyncBridge).requestL2Transaction{ value: address(this).balance }(
+            contractL2,
+            l2Value,
+            forwardedCalldata,
+            l2GasLimit,
+            l2GasPerPubdataByteLimit,
+            factoryDeps,
+            refundRecipient
+        );
+
+        emit TokensBridged(guildId, msg.sender, canonicalTxHash);
     }
 
     function sweep(address token, address payable recipient, uint256 amount) external onlyFeeCollector {

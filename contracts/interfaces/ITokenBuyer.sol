@@ -24,6 +24,27 @@ interface ITokenBuyer is IFeeDistributor {
         bytes[] calldata uniInputs
     ) external payable;
 
+    /// @notice Bridges tokens to ZkSync and takes a fee.
+    /// @param guildId The id of the guild where the payment was made. Used only for analytics.
+    /// @param contractL2 The L2 receiver address.
+    /// @param l2Value `msg.value` of L2 transaction.
+    /// @param forwardedCalldata The input of the L2 transaction.
+    /// @param l2GasLimit Maximum amount of L2 gas that transaction can consume during execution on L2.
+    /// @param l2GasPerPubdataByteLimit The max amount L2 gas that the operator may charge for single byte of pubdata.
+    /// @param factoryDeps An array of L2 bytecodes that will be marked as known on L2.
+    /// @param refundRecipient The address on L2 that will receive the refund for the transaction.
+    /// If the transaction fails, it will also be the address to receive `_l2Value`.
+    function bridgeAssets(
+        uint256 guildId,
+        address contractL2,
+        uint256 l2Value,
+        bytes calldata forwardedCalldata,
+        uint256 l2GasLimit,
+        uint256 l2GasPerPubdataByteLimit,
+        bytes[] calldata factoryDeps,
+        address refundRecipient
+    ) external payable;
+
     /// @notice Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
     /// @param token The address of the token to sweep. 0 for ether.
     /// @param recipient The recipient of the tokens.
@@ -35,6 +56,12 @@ interface ITokenBuyer is IFeeDistributor {
 
     /// @notice Returns the address the Permit2 contract.
     function permit2() external view returns (address);
+
+    /// @notice Event emitted when a call to {bridgeAssets} succeeds.
+    /// @param guildId The id of the guild where the payment was made. Used only for analytics.
+    /// @param sender The sender of the transaction.
+    /// @param canonicalTxHash The hash of the requested L2 transaction.
+    event TokensBridged(uint256 guildId, address sender, bytes32 canonicalTxHash);
 
     /// @notice Event emitted when a call to {getAssets} succeeds.
     /// @param guildId The id of the guild where the payment was made. Used only for analytics.
