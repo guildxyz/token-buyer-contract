@@ -163,8 +163,8 @@ describe("TokenBuyer", () => {
 
     it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
       const cryptopunks = token.attach("0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB");
-      const amountIn = BigNumber.from("67950000000000000000");
-      const punkId = 3736;
+      const amountIn = BigNumber.from("62990000000000000000");
+      const punkId = 7003;
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
       const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
