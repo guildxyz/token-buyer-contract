@@ -27,15 +27,22 @@ let tokenBuyer: Contract;
 // Uniswap Universal Router and Permit2 on Ethereum
 const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+const zkSyncBridgeAddress = "0x32400084C286CF3E17e7B677ea9583e60a000324";
 
-describe("TokenBuyer", function () {
-  this.beforeAll("get accounts", async () => {
+describe("TokenBuyer", () => {
+  before("get accounts", async () => {
     [wallet0, feeCollector, randomWallet] = await ethers.getSigners();
   });
 
-  this.beforeEach("deploy new contracts", async () => {
+  beforeEach("deploy new contracts", async () => {
     const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
-    tokenBuyer = await TokenBuyer.deploy(universalRouterAddress, permit2Address, feeCollector.address, feePercentBps);
+    tokenBuyer = await TokenBuyer.deploy(
+      universalRouterAddress,
+      permit2Address,
+      zkSyncBridgeAddress,
+      feeCollector.address,
+      feePercentBps
+    );
 
     await tokenBuyer.connect(feeCollector).setBaseFee(constants.AddressZero, baseFeeEther);
 
@@ -43,16 +50,17 @@ describe("TokenBuyer", function () {
     token = await ERC20.deploy();
   });
 
-  context("creating a contract", async () => {
+  context("creating a contract", () => {
     it("should initialize addresses", async () => {
       expect(await tokenBuyer.universalRouter()).to.equal(universalRouterAddress);
       expect(await tokenBuyer.permit2()).to.equal(permit2Address);
+      expect(await tokenBuyer.zkSyncBridge()).to.equal(zkSyncBridgeAddress);
       expect(await tokenBuyer.feeCollector()).to.equal(feeCollector.address);
       expect(await tokenBuyer.feePercentBps()).to.equal(feePercentBps);
     });
   });
 
-  context("paying fees", async () => {
+  context("swapping assets", () => {
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
       const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
       const amountIn = BigNumber.from("15343306352920000");
@@ -202,7 +210,30 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the base fee", async () => {
+  context("bridging assets to ZkSync", () => {
+    it("should emit a TokensBridged event", async () => {
+      const amountIn = ethers.utils.parseEther("0.1");
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+
+      const tx = await tokenBuyer.bridgeAssets(
+        guildId,
+        wallet0.address,
+        amountIn,
+        "0x",
+        733664,
+        800,
+        [],
+        wallet0.address,
+        { value: amountInWithFee.mul(2) }
+      );
+
+      await expect(tx)
+        .to.emit(tokenBuyer, "TokensBridged")
+        .withArgs(guildId, wallet0.address, () => true);
+    });
+  });
+
+  context("the base fee", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setBaseFee(token.address, 10))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -222,7 +253,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the fee collector", async () => {
+  context("the fee collector", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setFeeCollector(randomWallet.address))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -241,7 +272,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the fee collector's share", async () => {
+  context("the fee collector's share", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setFeePercentBps("100"))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -260,7 +291,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("sweep tokens", async () => {
+  context("sweep tokens", () => {
     it("should revert if it's attempted to be called by anyone else", async () => {
       await expect(tokenBuyer.sweep(constants.AddressZero, wallet0.address, 0))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
