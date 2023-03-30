@@ -40,6 +40,6 @@ contract FeeDistributor is IFeeDistributor {
     function calculateFee(address token, uint256 amount) internal view returns (uint256 fee) {
         uint256 baseFeeAmount = baseFee[token];
         uint256 withoutBaseFee = amount - baseFeeAmount;
-        return withoutBaseFee - ((withoutBaseFee / (10000 + feePercentBps)) * 10000) + baseFeeAmount;
+        return amount - ((withoutBaseFee / (10000 + feePercentBps)) * 10000);
     }
 }

@@ -5,7 +5,7 @@ interface IFeeDistributor {
     /// @notice The base fee of a swap on top of the percentual fee.
     /// @param token The token whose base fee is queried.
     /// @return baseFee The amount of the fee in wei.
-    function baseFee(address token) external returns (uint256 baseFee);
+    function baseFee(address token) external view returns (uint256 baseFee);
 
     /// @notice Sets the base fee for a given token.
     /// @dev Callable only by the current fee collector.
