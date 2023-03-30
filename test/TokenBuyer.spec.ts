@@ -1,6 +1,6 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber, constants, Contract } from "ethers";
+import { BigNumber, BigNumberish, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
 import {
   encodeCryptoPunks,
@@ -28,6 +28,23 @@ let tokenBuyer: Contract;
 const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const zkSyncBridgeAddress = "0x32400084C286CF3E17e7B677ea9583e60a000324";
+
+async function getZkSyncTransactionBaseCost(
+  gasPrice: BigNumberish,
+  l2GasLimit: BigNumberish,
+  l2GasPerPubdataByteLimit: BigNumberish
+): Promise<BigNumber> {
+  const bridgeContract = new Contract(
+    zkSyncBridgeAddress,
+    [
+      `function l2TransactionBaseCost(
+        uint256 _gasPrice, uint256 _l2GasLimit, uint256 _l2GasPerPubdataByteLimit
+      ) public pure returns (uint256)`
+    ],
+    wallet0
+  );
+  return bridgeContract.l2TransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit);
+}
 
 describe("TokenBuyer", () => {
   before("get accounts", async () => {
@@ -211,25 +228,65 @@ describe("TokenBuyer", () => {
   });
 
   context("bridging assets to ZkSync", () => {
-    it("should emit a TokensBridged event", async () => {
+    const l2GasLimit = 733664;
+    const l2GasPerPubdataByteLimit = 800; // Constant in the bridge contract
+
+    it("should collect ether fees", async () => {
+      const gasPrice = await ethers.provider.getGasPrice();
+
       const amountIn = ethers.utils.parseEther("0.1");
-      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const amountInForBridge = amountIn.add(
+        await getZkSyncTransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit)
+      );
+      const amountInWithFee = amountInForBridge.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
+
+      await expect(
+        tokenBuyer.bridgeAssets(
+          guildId,
+          wallet0.address,
+          amountIn,
+          "0x",
+          l2GasLimit,
+          l2GasPerPubdataByteLimit,
+          [],
+          wallet0.address,
+          {
+            gasPrice,
+            value: amountInWithFee
+          }
+        )
+      ).to.changeEtherBalances(
+        [wallet0, feeCollector],
+        [amountInWithFee.mul(-1), amountInWithFee.sub(amountInCalculated)]
+      );
+    });
+
+    it("should emit a TokensBridged event", async () => {
+      const gasPrice = await ethers.provider.getGasPrice();
+
+      const amountIn = ethers.utils.parseEther("0.1");
+      const amountInForBridge = amountIn.add(
+        await getZkSyncTransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit)
+      );
+      const amountInWithFee = amountInForBridge.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
 
       const tx = await tokenBuyer.bridgeAssets(
         guildId,
         wallet0.address,
         amountIn,
         "0x",
-        733664,
-        800,
+        l2GasLimit,
+        l2GasPerPubdataByteLimit,
         [],
         wallet0.address,
-        { value: amountInWithFee.mul(2) }
+        { value: amountInWithFee }
       );
 
-      await expect(tx)
-        .to.emit(tokenBuyer, "TokensBridged")
-        .withArgs(guildId, wallet0.address, () => true);
+      // It should be the second parameter of the event emitted by the bridge - NewPriorityRequest
+      const canonicalTxHash = `0x${(await tx.wait()).logs[0].data.slice(2 + 64, 2 + 64 + 64)}`;
+
+      await expect(tx).to.emit(tokenBuyer, "TokensBridged").withArgs(guildId, wallet0.address, canonicalTxHash);
     });
   });
 
