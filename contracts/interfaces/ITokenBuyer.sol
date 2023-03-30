@@ -33,7 +33,6 @@ interface ITokenBuyer is IFeeDistributor {
     /// @param l2GasPerPubdataByteLimit The max amount L2 gas that the operator may charge for single byte of pubdata.
     /// @param factoryDeps An array of L2 bytecodes that will be marked as known on L2.
     /// @param refundRecipient The address on L2 that will receive the refund for the transaction.
-    /// If the transaction fails, it will also be the address to receive `_l2Value`.
     function bridgeAssets(
         uint256 guildId,
         address contractL2,
@@ -56,6 +55,9 @@ interface ITokenBuyer is IFeeDistributor {
 
     /// @notice Returns the address the Permit2 contract.
     function permit2() external view returns (address);
+
+    /// @notice Returns the address of the ZkSync bridge contract.
+    function zkSyncBridge() external view returns (address);
 
     /// @notice Event emitted when a call to {bridgeAssets} succeeds.
     /// @param guildId The id of the guild where the payment was made. Used only for analytics.

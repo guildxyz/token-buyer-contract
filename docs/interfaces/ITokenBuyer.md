@@ -54,8 +54,7 @@ Bridges tokens to ZkSync and takes a fee.
 | `l2GasLimit` | uint256 | Maximum amount of L2 gas that transaction can consume during execution on L2. |
 | `l2GasPerPubdataByteLimit` | uint256 | The max amount L2 gas that the operator may charge for single byte of pubdata. |
 | `factoryDeps` | bytes[] | An array of L2 bytecodes that will be marked as known on L2. |
-| `refundRecipient` | address | The address on L2 that will receive the refund for the transaction.
-If the transaction fails, it will also be the address to receive `_l2Value`. |
+| `refundRecipient` | address | The address on L2 that will receive the refund for the transaction. |
 
 ### sweep
 
@@ -92,6 +91,14 @@ function permit2() external returns (address)
 ```
 
 Returns the address the Permit2 contract.
+
+### zkSyncBridge
+
+```solidity
+function zkSyncBridge() external returns (address)
+```
+
+Returns the address of the ZkSync bridge contract.
 
 ## Events
 
