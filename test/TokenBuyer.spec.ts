@@ -1,6 +1,6 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber, constants, Contract } from "ethers";
+import { BigNumber, BigNumberish, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
 import {
   encodeCryptoPunks,
@@ -27,15 +27,39 @@ let tokenBuyer: Contract;
 // Uniswap Universal Router and Permit2 on Ethereum
 const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+const zkSyncBridgeAddress = "0x32400084C286CF3E17e7B677ea9583e60a000324";
 
-describe("TokenBuyer", function () {
-  this.beforeAll("get accounts", async () => {
+async function getZkSyncTransactionBaseCost(
+  gasPrice: BigNumberish,
+  l2GasLimit: BigNumberish,
+  l2GasPerPubdataByteLimit: BigNumberish
+): Promise<BigNumber> {
+  const bridgeContract = new Contract(
+    zkSyncBridgeAddress,
+    [
+      `function l2TransactionBaseCost(
+        uint256 _gasPrice, uint256 _l2GasLimit, uint256 _l2GasPerPubdataByteLimit
+      ) public pure returns (uint256)`
+    ],
+    wallet0
+  );
+  return bridgeContract.l2TransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit);
+}
+
+describe("TokenBuyer", () => {
+  before("get accounts", async () => {
     [wallet0, feeCollector, randomWallet] = await ethers.getSigners();
   });
 
-  this.beforeEach("deploy new contracts", async () => {
+  beforeEach("deploy new contracts", async () => {
     const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
-    tokenBuyer = await TokenBuyer.deploy(universalRouterAddress, permit2Address, feeCollector.address, feePercentBps);
+    tokenBuyer = await TokenBuyer.deploy(
+      universalRouterAddress,
+      permit2Address,
+      zkSyncBridgeAddress,
+      feeCollector.address,
+      feePercentBps
+    );
 
     await tokenBuyer.connect(feeCollector).setBaseFee(constants.AddressZero, baseFeeEther);
 
@@ -43,16 +67,17 @@ describe("TokenBuyer", function () {
     token = await ERC20.deploy();
   });
 
-  context("creating a contract", async () => {
+  context("creating a contract", () => {
     it("should initialize addresses", async () => {
       expect(await tokenBuyer.universalRouter()).to.equal(universalRouterAddress);
       expect(await tokenBuyer.permit2()).to.equal(permit2Address);
+      expect(await tokenBuyer.zkSyncBridge()).to.equal(zkSyncBridgeAddress);
       expect(await tokenBuyer.feeCollector()).to.equal(feeCollector.address);
       expect(await tokenBuyer.feePercentBps()).to.equal(feePercentBps);
     });
   });
 
-  context("paying fees", async () => {
+  context("swapping assets", () => {
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
       const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
       const amountIn = BigNumber.from("15343306352920000");
@@ -155,8 +180,8 @@ describe("TokenBuyer", function () {
 
     it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
       const cryptopunks = token.attach("0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB");
-      const amountIn = BigNumber.from("67950000000000000000");
-      const punkId = 3736;
+      const amountIn = BigNumber.from("62990000000000000000");
+      const punkId = 7003;
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
       const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
@@ -202,7 +227,70 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the base fee", async () => {
+  context("bridging assets to ZkSync", () => {
+    const l2GasLimit = 733664;
+    const l2GasPerPubdataByteLimit = 800; // Constant in the bridge contract
+
+    it("should collect ether fees", async () => {
+      const gasPrice = await ethers.provider.getGasPrice();
+
+      const amountIn = ethers.utils.parseEther("0.1");
+      const amountInForBridge = amountIn.add(
+        await getZkSyncTransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit)
+      );
+      const amountInWithFee = amountInForBridge.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
+
+      await expect(
+        tokenBuyer.bridgeAssets(
+          guildId,
+          wallet0.address,
+          amountIn,
+          "0x",
+          l2GasLimit,
+          l2GasPerPubdataByteLimit,
+          [],
+          wallet0.address,
+          {
+            gasPrice,
+            value: amountInWithFee
+          }
+        )
+      ).to.changeEtherBalances(
+        [wallet0, feeCollector],
+        [amountInWithFee.mul(-1), amountInWithFee.sub(amountInCalculated)]
+      );
+    });
+
+    it("should emit a TokensBridged event", async () => {
+      const gasPrice = await ethers.provider.getGasPrice();
+
+      const amountIn = ethers.utils.parseEther("0.1");
+      const amountInForBridge = amountIn.add(
+        await getZkSyncTransactionBaseCost(gasPrice, l2GasLimit, l2GasPerPubdataByteLimit)
+      );
+      const amountInWithFee = amountInForBridge.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+
+      const tx = await tokenBuyer.bridgeAssets(
+        guildId,
+        wallet0.address,
+        amountIn,
+        "0x",
+        l2GasLimit,
+        l2GasPerPubdataByteLimit,
+        [],
+        wallet0.address,
+        { value: amountInWithFee }
+      );
+
+      // It should be the second parameter of the event emitted by the bridge - NewPriorityRequest
+      const canonicalTxHash = `0x${(await tx.wait()).logs[0].data.slice(2 + 64, 2 + 64 + 64)}`;
+
+      await expect(tx).to.emit(tokenBuyer, "TokensBridged").withArgs(guildId, wallet0.address, canonicalTxHash);
+    });
+  });
+
+  context("the base fee", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setBaseFee(token.address, 10))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -222,7 +310,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the fee collector", async () => {
+  context("the fee collector", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setFeeCollector(randomWallet.address))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -241,7 +329,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("the fee collector's share", async () => {
+  context("the fee collector's share", () => {
     it("should revert if it's attempted to be changed by anyone else", async () => {
       await expect(tokenBuyer.setFeePercentBps("100"))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
@@ -260,7 +348,7 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("sweep tokens", async () => {
+  context("sweep tokens", () => {
     it("should revert if it's attempted to be called by anyone else", async () => {
       await expect(tokenBuyer.sweep(constants.AddressZero, wallet0.address, 0))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
