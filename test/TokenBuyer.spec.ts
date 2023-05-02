@@ -56,16 +56,14 @@ describe("TokenBuyer", function () {
     });
   });
 
-  context("paying fees", async () => {
+  context("getting assets and paying fees", async () => {
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
       const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
       const amountIn = BigNumber.from("15343306352920000");
       const amountOut = ethers.utils.parseUnits("25", 6);
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
-      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
-      // This won't pass: we lose the last 4 digits because of poor precision
-      // expect(amountIn).to.eq(amountInCalculated);
+      const fee = amountInWithFee.sub(amountIn);
 
       const eoaERC20Balance0 = await usdc.balanceOf(wallet0.address);
       const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
@@ -99,7 +97,7 @@ describe("TokenBuyer", function () {
       expect(contractBalance).to.eq(0);
       expect(eoaERC20Balance1).to.eq(eoaERC20Balance0.add(amountOut));
       expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
-      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(fee));
     });
 
     it("should swap ERC20 to ERC20 and distribute tokens correctly", async () => {
@@ -109,9 +107,7 @@ describe("TokenBuyer", function () {
       const amountOut = ethers.utils.parseUnits("25", 6);
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000);
-      const amountInCalculated = amountInWithFee.div(feePercentBps.add(10000)).mul(10000);
-      // This won't pass: we lose the last 4 digits because of poor precision
-      // expect(amountIn).to.eq(amountInCalculated);
+      const fee = amountInWithFee.sub(amountIn);
 
       await wallet0.sendTransaction({ to: weth.address, value: amountInWithFee });
       await weth.approve(tokenBuyer.address, amountInWithFee);
@@ -154,7 +150,7 @@ describe("TokenBuyer", function () {
       expect(contractTokenInBalance).to.eq(0);
       expect(eoaTokenOutBalance1).to.eq(eoaTokenOutBalance0.add(amountOut));
       expect(eoaTokenInBalance1).to.gte(eoaTokenInBalance0.sub(amountInWithFee));
-      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(fee));
     });
 
     it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
@@ -163,7 +159,7 @@ describe("TokenBuyer", function () {
       const punkId = 3718;
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
-      const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
+      const fee = amountInWithFee.sub(amountIn);
 
       const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
       const eoaPunkBalance0 = await cryptopunks.balanceOf(wallet0.address);
@@ -187,7 +183,7 @@ describe("TokenBuyer", function () {
       expect(contractPunkBalance).to.eq(0);
       expect(eoaPunkBalance1).to.eq(eoaPunkBalance0.add(1));
       expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
-      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(fee));
     });
 
     it("should swap native token for nft via seaport", async () => {
