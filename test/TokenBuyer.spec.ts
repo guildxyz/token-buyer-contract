@@ -194,6 +194,7 @@ describe("TokenBuyer", function () {
       const nft = token.attach(seaportOrder.advancedOrder.parameters.offer[0].token);
       const amountIn = ethers.utils.parseEther("0.084");
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const fee = amountInWithFee.sub(amountIn);
 
       const seaport = new Contract(constants.AddressZero, seaportAbi, wallet0);
       const calldata = seaport.interface.encodeFunctionData("fulfillAdvancedOrder", [
@@ -204,6 +205,8 @@ describe("TokenBuyer", function () {
       ]);
 
       const eoaNftBalance0 = await nft.balanceOf(wallet0.address);
+      const eoaBalance0 = await ethers.provider.getBalance(wallet0.address);
+      const feeCollectorBalance0 = await ethers.provider.getBalance(feeCollector.address);
 
       await tokenBuyer.getAssets(
         guildId,
@@ -213,8 +216,17 @@ describe("TokenBuyer", function () {
         { value: amountInWithFee }
       );
 
+      const contractBalance = await ethers.provider.getBalance(tokenBuyer.address);
+      const contractNftBalance = await nft.balanceOf(tokenBuyer.address);
       const eoaNftBalance1 = await nft.balanceOf(wallet0.address);
-      expect(eoaNftBalance1.sub(eoaNftBalance0)).to.eq(1);
+      const eoaBalance1 = await ethers.provider.getBalance(wallet0.address);
+      const feeCollectorBalance1 = await ethers.provider.getBalance(feeCollector.address);
+
+      expect(contractBalance).to.eq(0);
+      expect(contractNftBalance).to.eq(0);
+      expect(eoaNftBalance1).to.eq(eoaNftBalance0.add(1));
+      expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
+      expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(fee));
     });
 
     it("should emit a TokensBought event", async () => {
