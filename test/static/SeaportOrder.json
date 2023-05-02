@@ -1,0 +1,57 @@
+{
+  "advancedOrder": {
+    "parameters": {
+      "offerer": "0x3deD646035E0aC9A4eEab15496b8Fc008BCF4a49",
+      "zone": "0x004C00500000aD104D7DBd00e3ae0A5C00560C00",
+      "offer": [
+        {
+          "itemType": "2",
+          "token": "0x884Ba86FAA29745b6C40B7098567A393E91335CF",
+          "identifierOrCriteria": "5493",
+          "startAmount": "1",
+          "endAmount": "1"
+        }
+      ],
+      "consideration": [
+        {
+          "itemType": "0",
+          "token": "0x0000000000000000000000000000000000000000",
+          "identifierOrCriteria": "0",
+          "startAmount": "75600000000000000",
+          "endAmount": "75600000000000000",
+          "recipient": "0x3deD646035E0aC9A4eEab15496b8Fc008BCF4a49"
+        },
+        {
+          "itemType": "0",
+          "token": "0x0000000000000000000000000000000000000000",
+          "identifierOrCriteria": "0",
+          "startAmount": "2100000000000000",
+          "endAmount": "2100000000000000",
+          "recipient": "0x0000a26b00c1F0DF003000390027140000fAa719"
+        },
+        {
+          "itemType": "0",
+          "token": "0x0000000000000000000000000000000000000000",
+          "identifierOrCriteria": "0",
+          "startAmount": "6300000000000000",
+          "endAmount": "6300000000000000",
+          "recipient": "0x69ec82A7682168322316408d772164Ba5F8E1Fda"
+        }
+      ],
+      "orderType": "0",
+      "startTime": "1681285536",
+      "endTime": "1683877536",
+      "zoneHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "salt": "24446860302761739304752683030156737591518664810215442929802430722003771368162",
+      "conduitKey": "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+      "totalOriginalConsiderationItems": "3"
+    },
+    "numerator": "1",
+    "denominator": "1",
+    "signature": "0xf9e14fb19731a97804f5a121353ce8644a52fffc99e3790a3175db5ed0f0813317d5257f860466642ba7ee92c3f363f8f7952114c510df82f19410316ce5aabd000000d35de7ae6f904e14949faa590aeeb922a20bd9cc5ad7c874d5e8a2d686afc2a8bcd24383f44a4810b9a763476c1e56306b1fb0cf28c64524266cda66ebbf259cf879aedecfec366392138dcbe3c9b215d00bdcdfff3508fc919457495a586919abc879d6a443aec7189cd9fc9b6b40f7239fda04a68fcf60c64c4ae30cb2d8a6",
+    "extraData": "0x00"
+  },
+  "criteriaResolvers": [],
+  "fulfillerConduitKey": "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+  "recipient": "0xd47bEe98E83DEf79890bEa8d664927767EfA8867"
+}

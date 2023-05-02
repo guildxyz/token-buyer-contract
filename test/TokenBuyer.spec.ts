@@ -1,14 +1,18 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import {
   encodeCryptoPunks,
   encodePermit2Permit,
+  encodeSeaport,
+  encodeSweep,
   encodeUnwrapEth,
   encodeV3SwapExactOut,
   encodeWrapEth
 } from "../scripts/callEncoder";
+import combinedAbi from "./static/CombinedAbi.json";
+import seaportOrder from "./static/SeaportOrder.json";
 
 // Test accounts
 let wallet0: SignerWithAddress;
@@ -184,6 +188,60 @@ describe("TokenBuyer", function () {
       expect(eoaPunkBalance1).to.eq(eoaPunkBalance0.add(1));
       expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
+    });
+
+    it.only("should swap native token for nft via seaport", async () => {
+      const seaport14 = "0x00000000000001ad428e4906aE43D8F9852d0dD6";
+      const seaport15 = "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC";
+      const amountIn = ethers.utils.parseEther("0.084");
+      const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
+      const sender = "0xd47bEe98E83DEf79890bEa8d664927767EfA8867";
+
+      await wallet0.sendTransaction({
+        to: sender,
+        value: ethers.utils.parseEther("0.5")
+      });
+
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [sender]
+      });
+      const signer = await ethers.getSigner(sender);
+
+      const universalRouter = new Contract(universalRouterAddress, combinedAbi, signer);
+      const seaport = new Contract(seaport14, combinedAbi, signer);
+
+      // const orderHash = await seaport.getOrderHash(seaportOrder.advancedOrder.parameters);
+      // console.log(orderHash);
+      // const orderStatus = await seaport.getOrderStatus(orderHash);
+      // console.log(orderStatus);
+
+      await seaport.fulfillAdvancedOrder(
+        seaportOrder.advancedOrder,
+        seaportOrder.criteriaResolvers,
+        seaportOrder.fulfillerConduitKey, // OPENSEA_CONDUIT_KEY
+        seaportOrder.recipient,
+        { value: amountIn }
+      );
+
+      // const calldata = seaport.interface.encodeFunctionData("fulfillAdvancedOrder", [
+      //   seaportOrder.advancedOrder,
+      //   [],
+      //   seaportOrder.fulfillerConduitKey, // OPENSEA_CONDUIT_KEY
+      //   seaportOrder.recipient
+      // ]);
+
+      // await universalRouter["execute(bytes,bytes[])"](
+      //   // guildId,
+      //   // { tokenAddress: constants.AddressZero, amount: 0 },
+      //   "0x0e04",
+      //   [
+      //     // encodeSeaport(amountIn, txdata),
+      //     calldata,
+      //     encodeSweep(constants.AddressZero, signer.address, 0)
+      //   ],
+      //   { value: amountInWithFee, gasLimit: 500000 }
+      // );
     });
 
     it("should emit a TokensBought event", async () => {
