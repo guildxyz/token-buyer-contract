@@ -11,8 +11,8 @@ import {
   encodeV3SwapExactOut,
   encodeWrapEth
 } from "../scripts/callEncoder";
-import combinedAbi from "./static/CombinedAbi.json";
-import seaportOrder from "./static/SeaportOrder.json";
+import seaportAbi from "./static/fulfillAdvancedOrderAbi.json";
+import seaportOrder from "./static/seaportOrder.json";
 
 // Test accounts
 let wallet0: SignerWithAddress;
@@ -195,7 +195,7 @@ describe("TokenBuyer", function () {
       const amountIn = ethers.utils.parseEther("0.084");
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
 
-      const seaport = new Contract(constants.AddressZero, combinedAbi, wallet0);
+      const seaport = new Contract(constants.AddressZero, seaportAbi, wallet0);
       const calldata = seaport.interface.encodeFunctionData("fulfillAdvancedOrder", [
         seaportOrder.advancedOrder,
         seaportOrder.criteriaResolvers,
