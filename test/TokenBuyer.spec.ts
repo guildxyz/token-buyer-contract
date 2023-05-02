@@ -1,7 +1,7 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
-import { ethers, network } from "hardhat";
+import { ethers } from "hardhat";
 import {
   encodeCryptoPunks,
   encodePermit2Permit,
@@ -29,7 +29,7 @@ let token: Contract;
 let tokenBuyer: Contract;
 
 // Uniswap Universal Router and Permit2 on Ethereum
-const universalRouterAddress = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B";
+const universalRouterAddress = "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD";
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
 describe("TokenBuyer", function () {
@@ -191,57 +191,30 @@ describe("TokenBuyer", function () {
     });
 
     it.only("should swap native token for nft via seaport", async () => {
-      const seaport14 = "0x00000000000001ad428e4906aE43D8F9852d0dD6";
-      const seaport15 = "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC";
+      const nft = token.attach(seaportOrder.advancedOrder.parameters.offer[0].token);
       const amountIn = ethers.utils.parseEther("0.084");
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
-      const sender = "0xd47bEe98E83DEf79890bEa8d664927767EfA8867";
 
-      await wallet0.sendTransaction({
-        to: sender,
-        value: ethers.utils.parseEther("0.5")
-      });
-
-      await network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [sender]
-      });
-      const signer = await ethers.getSigner(sender);
-
-      const universalRouter = new Contract(universalRouterAddress, combinedAbi, signer);
-      const seaport = new Contract(seaport14, combinedAbi, signer);
-
-      // const orderHash = await seaport.getOrderHash(seaportOrder.advancedOrder.parameters);
-      // console.log(orderHash);
-      // const orderStatus = await seaport.getOrderStatus(orderHash);
-      // console.log(orderStatus);
-
-      await seaport.fulfillAdvancedOrder(
+      const seaport = new Contract(constants.AddressZero, combinedAbi, wallet0);
+      const calldata = seaport.interface.encodeFunctionData("fulfillAdvancedOrder", [
         seaportOrder.advancedOrder,
         seaportOrder.criteriaResolvers,
-        seaportOrder.fulfillerConduitKey, // OPENSEA_CONDUIT_KEY
-        seaportOrder.recipient,
-        { value: amountIn }
+        seaportOrder.fulfillerConduitKey,
+        wallet0.address
+      ]);
+
+      const eoaNftBalance0 = await nft.balanceOf(wallet0.address);
+
+      await tokenBuyer.getAssets(
+        guildId,
+        { tokenAddress: constants.AddressZero, amount: 0 },
+        "0x2004", // SEAPORT_V1_4, SWEEP
+        [encodeSeaport(amountIn, calldata), encodeSweep(constants.AddressZero, wallet0.address, 0)],
+        { value: amountInWithFee }
       );
 
-      // const calldata = seaport.interface.encodeFunctionData("fulfillAdvancedOrder", [
-      //   seaportOrder.advancedOrder,
-      //   [],
-      //   seaportOrder.fulfillerConduitKey, // OPENSEA_CONDUIT_KEY
-      //   seaportOrder.recipient
-      // ]);
-
-      // await universalRouter["execute(bytes,bytes[])"](
-      //   // guildId,
-      //   // { tokenAddress: constants.AddressZero, amount: 0 },
-      //   "0x0e04",
-      //   [
-      //     // encodeSeaport(amountIn, txdata),
-      //     calldata,
-      //     encodeSweep(constants.AddressZero, signer.address, 0)
-      //   ],
-      //   { value: amountInWithFee, gasLimit: 500000 }
-      // );
+      const eoaNftBalance1 = await nft.balanceOf(wallet0.address);
+      expect(eoaNftBalance1.sub(eoaNftBalance0)).to.eq(1);
     });
 
     it("should emit a TokensBought event", async () => {
