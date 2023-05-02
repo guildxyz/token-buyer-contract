@@ -159,8 +159,8 @@ describe("TokenBuyer", function () {
 
     it("should swap native token for CryptoPunks and distribute tokens correctly", async () => {
       const cryptopunks = token.attach("0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB");
-      const amountIn = BigNumber.from("67950000000000000000");
-      const punkId = 3736;
+      const amountIn = BigNumber.from("58690000000000000000");
+      const punkId = 3718;
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
       const amountInCalculated = amountInWithFee.sub(baseFeeEther).div(feePercentBps.add(10000)).mul(10000);
@@ -190,7 +190,7 @@ describe("TokenBuyer", function () {
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(amountInWithFee.sub(amountInCalculated)));
     });
 
-    it.only("should swap native token for nft via seaport", async () => {
+    it("should swap native token for nft via seaport", async () => {
       const nft = token.attach(seaportOrder.advancedOrder.parameters.offer[0].token);
       const amountIn = ethers.utils.parseEther("0.084");
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
