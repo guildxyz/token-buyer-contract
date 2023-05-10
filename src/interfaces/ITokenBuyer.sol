@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { IFeeDistributor } from "./IFeeDistributor.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "openzeppelin/token/ERC20/IERC20.sol";
 
 /// @title A smart contract for buying any kind of tokens and taking a fee.
 interface ITokenBuyer is IFeeDistributor {

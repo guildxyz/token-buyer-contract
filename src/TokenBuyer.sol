@@ -6,7 +6,7 @@ import { Signatures } from "./utils/Signatures.sol";
 import { ITokenBuyer } from "./interfaces/ITokenBuyer.sol";
 import { IUniversalRouter } from "./interfaces/external/IUniversalRouter.sol";
 import { LibAddress } from "./lib/LibAddress.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "openzeppelin/token/ERC20/IERC20.sol";
 
 /// @title A smart contract for buying any kind of tokens and taking a fee.
 contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
