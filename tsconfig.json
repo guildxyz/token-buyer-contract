@@ -8,7 +8,8 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "allowJs": true
+    "allowJs": true,
+    "resolveJsonModule": true
   },
   "include": ["./scripts", "./test"],
   "files": ["./hardhat.config.ts"]
