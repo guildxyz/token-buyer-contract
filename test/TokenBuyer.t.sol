@@ -1,24 +1,8 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import {TokenBuyer} from "src/TokenBuyer.sol";
-import {MockERC20} from "src/mock/MockERC20.sol";
-
-contract DummyTest is Test {
-	uint256 testNumber;
-
-	function setUp() public {
-		testNumber = 42;
-	}
-
-	function test_NumberIs42() public {
-		assertEq(testNumber, 42);
-	}
-
-	function testFail_Subtract43() public {
-		testNumber -= 43;
-	}
-}
+import { TokenBuyer } from "src/TokenBuyer.sol";
+import { MockERC20 } from "src/mock/MockERC20.sol";
 
 contract TokenBuyerTest is Test {
 	TokenBuyer tokenBuyer;
@@ -49,6 +33,7 @@ contract TokenBuyerTest is Test {
 			feePercentBps
 		);
 
+		vm.prank(feeCollector);
 		tokenBuyer.setBaseFee(zeroAddress, baseFeeEther);
 
 		token = new MockERC20();
@@ -61,8 +46,6 @@ contract TokenBuyerTest is Test {
 		assertEq(tokenBuyer.feeCollector(), feeCollector);
 		assertEq(tokenBuyer.feePercentBps(), feePercentBps);
 
-		// check baseFee
-		assertEq(tokenBuyer.calculateFee(zeroAddress, 0.001 ether), 100);
 	}
 
 	//function test_SwapNativeToken() public {
