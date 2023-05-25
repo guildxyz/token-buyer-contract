@@ -52,10 +52,10 @@ contract FeeDistributorTest is Test {
 		assertEq(feeDistributorHarness.feePercentBps(), feePercentBps);
 
 		// check fee calculation (values computed using a python script)
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 509803921570000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.02 ether), 882352941180000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.001 ether), 117647058830000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.02 ether), 490196078440000);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 509803921568628);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.02 ether), 882352941176471);
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.001 ether), 117647058823530);
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.02 ether), 490196078431373);
 
 		// change fee base fee bps
 		vm.prank(feeCollector);
@@ -63,10 +63,10 @@ contract FeeDistributorTest is Test {
 		assertEq(feeDistributorHarness.feePercentBps(), 300);
 
 		// check fee calculation again
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 514563106800000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.02 ether), 1067961165050000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.001 ether), 126213592240000);
-		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.02 ether), 679611650490000);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 514563106796117);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.02 ether), 1067961165048544);
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.001 ether), 126213592233010);
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.02 ether), 679611650485437);
 	}
 
 	function testFail_SetBaseFeeOnlyFeeCollector() public {
