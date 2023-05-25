@@ -5,6 +5,11 @@ import { FeeDistributor } from "src/utils/FeeDistributor.sol";
 
 // TODO abstract ?
 contract FeeDistributorHarness is FeeDistributor {
+	constructor(
+		address payable feeCollector_,
+		uint96 feePercentBps_
+	) FeeDistributor(feeCollector_, feePercentBps_) {}
+
 	function exposed_calculateFee(address token, uint256 amount) external view returns (uint256 fee) {
 		return calculateFee(token, amount);
 	}
@@ -31,7 +36,7 @@ contract FeeDistributorTest is Test {
 		oneAddress = address(1);
 
 		feeDistributor = new FeeDistributor(feeCollector, feePercentBps);
-		feeDistributorHarness = new FeeDistributorHarness();
+		feeDistributorHarness = new FeeDistributorHarness(feeCollector, feePercentBps);
 
 		vm.prank(feeCollector);
 		feeDistributor.setBaseFee(zeroAddress, zeroBaseFeeEther);
@@ -44,6 +49,6 @@ contract FeeDistributorTest is Test {
 		assertEq(feeDistributor.feePercentBps(), feePercentBps);
 
 		// check baseFee
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 100);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 19607843140000);
 	}
 }
