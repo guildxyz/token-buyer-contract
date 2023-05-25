@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import { FeeDistributor } from "src/utils/FeeDistributor.sol";
 
-// TODO abstract ?
 contract FeeDistributorHarness is FeeDistributor {
 	constructor(
 		address payable feeCollector_,
@@ -16,7 +15,6 @@ contract FeeDistributorHarness is FeeDistributor {
 }
 
 contract FeeDistributorTest is Test {
-	FeeDistributor feeDistributor;
 	FeeDistributorHarness feeDistributorHarness;
 	address zeroAddress;
 	address oneAddress;
@@ -35,20 +33,23 @@ contract FeeDistributorTest is Test {
 		zeroAddress = address(0);
 		oneAddress = address(1);
 
-		feeDistributor = new FeeDistributor(feeCollector, feePercentBps);
 		feeDistributorHarness = new FeeDistributorHarness(feeCollector, feePercentBps);
 
 		vm.prank(feeCollector);
-		feeDistributor.setBaseFee(zeroAddress, zeroBaseFeeEther);
+		feeDistributorHarness.setBaseFee(zeroAddress, zeroBaseFeeEther);
 		vm.prank(feeCollector);
-		feeDistributor.setBaseFee(oneAddress, oneBaseFeeEther);
+		feeDistributorHarness.setBaseFee(oneAddress, oneBaseFeeEther);
 	}
 
 	function test_CalculateFee() public {
-		assertEq(feeDistributor.feeCollector(), feeCollector);
-		assertEq(feeDistributor.feePercentBps(), feePercentBps);
+		assertEq(feeDistributorHarness.feeCollector(), feeCollector);
+		assertEq(feeDistributorHarness.feePercentBps(), feePercentBps);
 
 		// check baseFee
-		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 19607843140000);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.001 ether), 509803921570000);
+		assertEq(feeDistributorHarness.exposed_calculateFee(zeroAddress, 0.02 ether), 882352941180000);
+
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.001 ether), 117647058830000);
+		assertEq(feeDistributorHarness.exposed_calculateFee(oneAddress, 0.02 ether), 490196078440000);
 	}
 }
