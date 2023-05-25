@@ -93,9 +93,9 @@ contract FeeDistributorTest is Test {
 		address twoAddress;
 		twoAddress = address(2);
 		
-		// expecting a specific emit message
+		// expecting a specific event
 		vm.expectEmit(true, true, true, true);
-		emit FeeDistributorHarness.BaseFeeChanged(oneAddress, 550);
+		emit FeeDistributorHarness.BaseFeeChanged(twoAddress, 550);
 
 		// do actually call the contract
 		vm.prank(feeCollector);
