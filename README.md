@@ -18,7 +18,7 @@ Certain actions, like deploying to a public network or verifying source code on 
 
 ### Some additional steps before deployment
 
-Open _scripts/deploy-tokenbuyer.ts_. Notice the top four constants:
+Open _script/deploy-tokenbuyer.ts_. Notice the top four constants:
 
 ```js
 const universalRouter = "0x..."; // Uniswap Universal Router's address.
@@ -34,7 +34,7 @@ Edit them according to your needs.
 To deploy the smart contracts to a network, replace _[networkName]_ with the name of the network and _[scriptName]_ with the name of the script you wish to run in this command:
 
 ```bash
-npx hardhat run scripts/[scriptName] --network [networkName]
+npx hardhat run script/[scriptName] --network [networkName]
 ```
 
 Networks can be configured in _[hardhat.config.ts](hardhat.config.ts)_. We've preconfigured the following:

@@ -3,6 +3,11 @@ coverage
 coverage.json
 typechain
 
-# foundry artifacts
 cache/
+
+# foundry artifacts
 out/
+
+# Hardhat stuff
+node_modules/
+package-lock.json
