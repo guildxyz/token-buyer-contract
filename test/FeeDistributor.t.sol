@@ -4,6 +4,7 @@ import "forge-std/Test.sol";
 import { FeeDistributor } from "src/utils/FeeDistributor.sol";
 import { IFeeDistributor } from "src/interfaces/IFeeDistributor.sol";
 
+
 contract FeeDistributorHarness is FeeDistributor {
 	constructor(
 		address payable feeCollector_,
@@ -26,6 +27,10 @@ contract FeeDistributorTest is Test {
 	uint256 zeroBaseFeeEther;
 	uint256 oneBaseFeeEther;
 	uint96 feePercentBps;
+
+	event BaseFeeChanged(address token, uint256 newFee);
+	event FeeCollectorChanged(address newFeeCollector);
+	event FeePercentBpsChanged(uint96 newShare);
 
 	function setUp() public {
 		feeCollectorPrivateKey = 0xFEEC011EC402;
@@ -95,11 +100,35 @@ contract FeeDistributorTest is Test {
 		
 		// expecting a specific event
 		vm.expectEmit(true, true, true, true);
-		emit FeeDistributorHarness.BaseFeeChanged(twoAddress, 550);
+		emit BaseFeeChanged(twoAddress, 550);
 
 		// do actually call the contract
 		vm.prank(feeCollector);
 		feeDistributorHarness.setBaseFee(twoAddress, 550);
+	}
+
+	function test_EmitFeeCollectorChanged() public {
+		// new fee collector
+		address payable newFeeCollector;
+		newFeeCollector = payable(vm.addr(0x900D));
+		
+		// expecting a specific event
+		vm.expectEmit(true, true, true, true);
+		emit FeeCollectorChanged(newFeeCollector);
+
+		// do actually call the contract
+		vm.prank(feeCollector);
+		feeDistributorHarness.setFeeCollector(newFeeCollector);
+	}
+
+	function test_EmitFeePercentBpsChanged() public {
+		// expecting a specific event
+		vm.expectEmit(true, true, true, true);
+		emit FeePercentBpsChanged(1234);
+
+		// do actually call the contract
+		vm.prank(feeCollector);
+		feeDistributorHarness.setFeePercentBps(1234);
 	}
 
 	function test_SetBaseFeeOnlyFeeCollector() public {
