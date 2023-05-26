@@ -10,4 +10,3 @@ out/
 
 # Hardhat stuff
 node_modules/
-package-lock.json
