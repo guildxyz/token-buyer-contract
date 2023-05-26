@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { IFeeDistributor } from "../interfaces/IFeeDistributor.sol";
+import {IFeeDistributor} from "../interfaces/IFeeDistributor.sol";
 
 contract FeeDistributor is IFeeDistributor {
     address payable public feeCollector;

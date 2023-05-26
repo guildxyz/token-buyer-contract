@@ -12,7 +12,7 @@ library LibAddress {
     /// @param amount The amount of ether to send in wei.
     function sendEther(address payable recipient, uint256 amount) internal {
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, ) = recipient.call{ value: amount }("");
+        (bool success,) = recipient.call{value: amount}("");
         if (!success) revert FailedToSendEther(recipient);
     }
 }
