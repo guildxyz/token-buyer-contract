@@ -1,7 +1,9 @@
+import { setCode } from "@nomicfoundation/hardhat-network-helpers";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
+import { deployedBytecode as badTokenBytecode } from "../artifacts/contracts/mock/MockBadERC20.sol/MockBadERC20.json";
 import {
   encodeCryptoPunks,
   encodePermit2Permit,
@@ -24,7 +26,7 @@ const feePercentBps = BigNumber.from(200);
 const baseFeeEther = ethers.utils.parseEther("0.0005");
 const guildId = 1;
 
-// Contract instances
+// Contracts
 let token: Contract;
 let tokenBuyer: Contract;
 
@@ -57,9 +59,18 @@ describe("TokenBuyer", function () {
   });
 
   context("getting assets and paying fees", async () => {
+    it("should revert if transferring tokens fails", async () => {
+      await setCode(token.address, badTokenBytecode);
+      await token.approve(tokenBuyer.address, 10);
+      const tx = tokenBuyer.getAssets(guildId, { tokenAddress: token.address, amount: 10 }, "0x00", []);
+      await expect(tx)
+        .to.be.revertedWithCustomError(tokenBuyer, "TransferFailed")
+        .withArgs(wallet0.address, tokenBuyer.address);
+    });
+
     it("should swap native token to ERC20 and distribute tokens correctly", async () => {
       const usdc = token.attach("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
-      const amountIn = BigNumber.from("15343306352920000");
+      const amountIn = ethers.utils.parseEther("0.014");
       const amountOut = ethers.utils.parseUnits("25", 6);
 
       const amountInWithFee = amountIn.mul(feePercentBps.add(10000)).div(10000).add(baseFeeEther);
@@ -96,7 +107,7 @@ describe("TokenBuyer", function () {
       expect(contractERC20Balance).to.eq(0);
       expect(contractBalance).to.eq(0);
       expect(eoaERC20Balance1).to.eq(eoaERC20Balance0.add(amountOut));
-      expect(eoaBalance1).to.lte(eoaBalance0.sub(amountInWithFee));
+      expect(eoaBalance1).to.closeTo(eoaBalance0.sub(amountInWithFee), ethers.utils.parseEther("0.005"));
       expect(feeCollectorBalance1).to.eq(feeCollectorBalance0.add(fee));
     });
 
@@ -304,6 +315,13 @@ describe("TokenBuyer", function () {
       await expect(tokenBuyer.sweep(constants.AddressZero, wallet0.address, 0))
         .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
         .withArgs(wallet0.address, feeCollector.address);
+    });
+
+    it("should revert if transferring tokens fails", async () => {
+      await setCode(token.address, badTokenBytecode);
+      await expect(tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, 0))
+        .to.be.revertedWithCustomError(tokenBuyer, "TransferFailed")
+        .withArgs(tokenBuyer.address, wallet0.address);
     });
 
     it("should give ERC20", async () => {
