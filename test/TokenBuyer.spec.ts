@@ -3,7 +3,7 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, constants, Contract } from "ethers";
 import { ethers } from "hardhat";
-import { deployedBytecode as badTokenBytecode } from "../artifacts/contracts/mock/MockBadERC20.sol/MockBadERC20.json";
+import { deployedBytecode } from "../artifacts/contracts/mock/MockBadERC20.sol/MockBadERC20.json";
 import {
   encodeCryptoPunks,
   encodePermit2Permit,
@@ -29,6 +29,7 @@ const guildId = 1;
 // Contracts
 let token: Contract;
 let tokenBuyer: Contract;
+const badTokenBytecode = deployedBytecode;
 
 // Uniswap Universal Router and Permit2 on Ethereum
 const universalRouterAddress = "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD";
