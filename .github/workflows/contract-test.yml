@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  foundry:
-    name: Foundry checks
+  lint:
+    name: Linting contracts and ts files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,11 +21,45 @@ jobs:
       - name: Check fmt
         run: forge fmt --check
 
+  test:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: Run tests
         run: forge test -vvv
 
       - name: Run snapshot
         run: forge snapshot
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "**/node_modules"
+          key: npm-v1-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-v1-
+
+      - name: Install dependencies
+        run: npm ci
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Run tests
+        env:
+          INFURA_ID: ${{ secrets.INFURA_ID }}
+        run: npm test
   #lint:
   #  runs-on: ubuntu-latest
 
@@ -56,32 +90,3 @@ jobs:
   #    - name: Lint scripts
   #      run: npm run lint-ts
 
-  hardhat:
-    name: Hardhat checks
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: "npm"
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "**/node_modules"
-          key: npm-v1-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: npm-v1-
-
-      - name: Install dependencies
-        run: npm ci
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: Run tests
-        env:
-          INFURA_ID: ${{ secrets.INFURA_ID }}
-        run: npm test
