@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { FeeDistributor } from "./utils/FeeDistributor.sol";
-import { Signatures } from "./utils/Signatures.sol";
-import { ITokenBuyer } from "./interfaces/ITokenBuyer.sol";
-import { IUniversalRouter } from "./interfaces/external/IUniversalRouter.sol";
-import { LibAddress } from "./lib/LibAddress.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {FeeDistributor} from "./utils/FeeDistributor.sol";
+import {Signatures} from "./utils/Signatures.sol";
+import {ITokenBuyer} from "./interfaces/ITokenBuyer.sol";
+import {IUniversalRouter} from "./interfaces/external/IUniversalRouter.sol";
+import {LibAddress} from "./lib/LibAddress.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 
 /// @title A smart contract for buying any kind of tokens and taking a fee.
 contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
@@ -38,20 +38,24 @@ contract TokenBuyer is ITokenBuyer, FeeDistributor, Signatures {
         IERC20 token = IERC20(payToken.tokenAddress);
 
         // Get the tokens from the user and send the fee collector's share
-        if (address(token) == address(0)) feeCollector.sendEther(calculateFee(address(0), msg.value));
-        else {
-            if (!token.transferFrom(msg.sender, address(this), payToken.amount))
+        if (address(token) == address(0)) {
+            feeCollector.sendEther(calculateFee(address(0), msg.value));
+        } else {
+            if (!token.transferFrom(msg.sender, address(this), payToken.amount)) {
                 revert TransferFailed(msg.sender, address(this));
-            if (!token.transfer(feeCollector, calculateFee(address(token), payToken.amount)))
+            }
+            if (!token.transfer(feeCollector, calculateFee(address(token), payToken.amount))) {
                 revert TransferFailed(address(this), feeCollector);
+            }
             if (token.allowance(address(this), permit2) < payToken.amount) token.approve(permit2, type(uint256).max);
         }
 
-        IUniversalRouter(universalRouter).execute{ value: address(this).balance }(uniCommands, uniInputs);
+        IUniversalRouter(universalRouter).execute{value: address(this).balance}(uniCommands, uniInputs);
 
         // Send out any remaining tokens
-        if (address(token) != address(0) && !token.transfer(msg.sender, token.balanceOf(address(this))))
+        if (address(token) != address(0) && !token.transfer(msg.sender, token.balanceOf(address(this)))) {
             revert TransferFailed(address(this), msg.sender);
+        }
 
         emit TokensBought(guildId);
     }

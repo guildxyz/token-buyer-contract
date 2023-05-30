@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { ITokenBuyer } from "../interfaces/ITokenBuyer.sol";
+import {ITokenBuyer} from "../interfaces/ITokenBuyer.sol";
 
 contract Signatures {
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")

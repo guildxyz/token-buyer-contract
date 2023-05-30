@@ -8,40 +8,35 @@ on:
 
 jobs:
   lint:
+    name: Linting contracts and ts files
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
         with:
-          node-version: "18"
-          cache: "npm"
+          submodules: recursive
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "**/node_modules"
-          key: npm-v1-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: npm-v1-
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Install dependencies
-        run: npm ci
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Check fmt
+        run: forge fmt --check
 
-      - name: Lint contracts
-        run: npm run lint-contracts
-
-      - name: Lint scripts
-        run: npm run lint-ts
-
-  tests:
+  test:
+    name: Unit and integration tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Run tests
+        run: forge test -vvv
+
+      - name: Run snapshot
+        run: forge snapshot
 
       - name: Setup NodeJS
         uses: actions/setup-node@v3
@@ -65,3 +60,33 @@ jobs:
         env:
           INFURA_ID: ${{ secrets.INFURA_ID }}
         run: npm test
+  #lint:
+  #  runs-on: ubuntu-latest
+
+  #  steps:
+  #    - uses: actions/checkout@v3
+
+  #    - name: Setup NodeJS
+  #      uses: actions/setup-node@v3
+  #      with:
+  #        node-version: "18"
+  #        cache: "npm"
+
+  #    - name: Cache node modules
+  #      uses: actions/cache@v3
+  #      id: cache
+  #      with:
+  #        path: "**/node_modules"
+  #        key: npm-v1-${{ hashFiles('**/package-lock.json') }}
+  #        restore-keys: npm-v1-
+
+  #    - name: Install dependencies
+  #      run: npm ci
+  #      if: steps.cache.outputs.cache-hit != 'true'
+
+  #    - name: Lint contracts
+  #      run: npm run lint-contracts
+
+  #    - name: Lint scripts
+  #      run: npm run lint-ts
+

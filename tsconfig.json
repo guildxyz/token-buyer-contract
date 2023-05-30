@@ -11,6 +11,6 @@
     "allowJs": true,
     "resolveJsonModule": true
   },
-  "include": ["./scripts", "./test"],
+  "include": ["./script", "./test"],
   "files": ["./hardhat.config.ts"]
 }
