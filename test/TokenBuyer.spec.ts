@@ -12,7 +12,7 @@ import {
   encodeUnwrapEth,
   encodeV3SwapExactOut,
   encodeWrapEth
-} from "../scripts/callEncoder";
+} from "../script/callEncoder";
 import seaportAbi from "./static/fulfillAdvancedOrderAbi.json";
 import seaportOrder from "./static/seaportOrder.json";
 
@@ -30,7 +30,7 @@ const guildId = 1;
 let token: Contract;
 let tokenBuyer: Contract;
 const badTokenBytecode = JSON.parse(
-  readFileSync("artifacts/contracts/mock/MockBadERC20.sol/MockBadERC20.json", "utf-8")
+  readFileSync("out/MockBadERC20.sol/MockBadERC20.json", "utf-8")
 ).deployedBytecode;
 
 // Uniswap Universal Router and Permit2 on Ethereum
