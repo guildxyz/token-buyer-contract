@@ -87,7 +87,7 @@ contract TokenBuyerTest is Test {
         MockBadERC20 badToken;
         badToken = new MockBadERC20();
 
-        vm.expectRevert(abi.encodeWithSelector(ITokenBuyer.TransferFailed.selector, address(tokenBuyer), feeCollector));
+        vm.expectRevert(abi.encodeWithSelector(ITokenBuyer.TransferFailed.selector, address(tokenBuyer), recipient));
 
         // sweep without the contract having any balance
         vm.prank(feeCollector);
