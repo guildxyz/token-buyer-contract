@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 
 // Abi encode parameters for contract calls
 const encodeParameters = (types: readonly string[], values: readonly any[]) =>
-  ethers.utils.defaultAbiCoder.encode(types, values);
+  ethers.AbiCoder.defaultAbiCoder().encode(types, values);
 
 const encodeWrapEth = (recipient: string, amountMin: BigNumberish) =>
   encodeParameters(["address", "uint256"], [recipient, amountMin]);
@@ -46,11 +46,11 @@ const encodeSeaport = (value: BigNumberish, calldata: BytesLike) =>
   encodeParameters(["uint256", "bytes"], [value, calldata]);
 
 export {
-  encodeWrapEth,
+  encodeCryptoPunks,
+  encodePermit2Permit,
+  encodeSeaport,
+  encodeSweep,
   encodeUnwrapEth,
   encodeV3SwapExactOut,
-  encodePermit2Permit,
-  encodeSweep,
-  encodeCryptoPunks,
-  encodeSeaport
+  encodeWrapEth
 };

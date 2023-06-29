@@ -10,15 +10,13 @@ async function main() {
   const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
   const tokenBuyer = await TokenBuyer.deploy(universalRouter, permit2, feeCollector, feePercentBps);
 
-  console.log(
-    `Deploying contract to ${
-      ethers.provider.network.name !== "unknown" ? ethers.provider.network.name : ethers.provider.network.chainId
-    }...`
-  );
+  const network = await ethers.provider.getNetwork();
+  console.log(`Deploying contract to ${network.name !== "unknown" ? network.name : network.chainId}...`);
+  console.log(`Tx hash: ${tokenBuyer.deploymentTransaction()?.hash}`);
 
-  await tokenBuyer.deployed();
+  await tokenBuyer.waitForDeployment();
 
-  console.log("TokenBuyer deployed to:", tokenBuyer.address);
+  console.log("TokenBuyer deployed to:", await tokenBuyer.getAddress());
   console.log("Constructor arguments:", universalRouter, permit2, feeCollector, feePercentBps);
 }
 

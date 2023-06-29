@@ -14,5 +14,5 @@ const types = [
   "address"
 ];
 
-const decoded = ethers.utils.defaultAbiCoder.decode(types, data);
+const decoded = ethers.AbiCoder.defaultAbiCoder().decode(types, data);
 console.log(decoded);
