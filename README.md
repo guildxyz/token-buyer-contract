@@ -52,7 +52,7 @@ Networks can be configured in _[hardhat.config.ts](hardhat.config.ts)_. We've pr
 
 ## Verification
 
-For source code verification on block explorers, you can use the Etherscan plugin:
+For source code verification on block explorers, you can use the Verify plugin:
 
 ```bash
 npx hardhat verify [contractAddress] [constructorArguments] --network [networkName]
@@ -60,7 +60,7 @@ npx hardhat verify [contractAddress] [constructorArguments] --network [networkNa
 
 Note: the contract's address and the constructor arguments are printed by the deploy script, so they can easily be copied to this command.
 
-For more detailed instructions, check out the plugin's documentation [here](https://hardhat.org/plugins/nomiclabs-hardhat-etherscan#usage).
+For more detailed instructions, check out the plugin's documentation [here](https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#usage).
 
 ## Linting
 
