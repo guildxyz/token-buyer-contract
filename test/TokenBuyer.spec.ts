@@ -46,7 +46,7 @@ describe("TokenBuyer", function () {
     const TokenBuyer = await ethers.getContractFactory("TokenBuyer");
     tokenBuyer = await TokenBuyer.deploy(universalRouterAddress, permit2Address, feeCollector.address, feePercentBps);
 
-    await tokenBuyer.connect(feeCollector).setBaseFee(constants.AddressZero, baseFeeEther);
+    await tokenBuyer.setBaseFee(constants.AddressZero, baseFeeEther);
 
     const ERC20 = await ethers.getContractFactory("MockERC20");
     token = await ERC20.deploy();
@@ -256,73 +256,73 @@ describe("TokenBuyer", function () {
   });
 
   context("the base fee", async () => {
-    it("should revert if it's attempted to be changed by anyone else", async () => {
-      await expect(tokenBuyer.setBaseFee(token.address, 10))
-        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
-        .withArgs(wallet0.address, feeCollector.address);
+    it("should revert if it's attempted to be changed by anyone but the owner", async () => {
+      await expect(tokenBuyer.connect(randomWallet).setBaseFee(token.address, 10)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
     });
 
     it("should change the fee", async () => {
       const feeAmount = ethers.utils.parseEther("0.003");
-      await tokenBuyer.connect(feeCollector).setBaseFee(token.address, feeAmount);
+      await tokenBuyer.setBaseFee(token.address, feeAmount);
       const newFee = await tokenBuyer.baseFee(token.address);
       expect(newFee).to.eq(feeAmount);
     });
 
     it("should emit a BaseFeeChanged event", async () => {
-      const tx = tokenBuyer.connect(feeCollector).setBaseFee(token.address, 10);
+      const tx = tokenBuyer.setBaseFee(token.address, 10);
       await expect(tx).to.emit(tokenBuyer, "BaseFeeChanged").withArgs(token.address, 10);
     });
   });
 
   context("the fee collector", async () => {
-    it("should revert if it's attempted to be changed by anyone else", async () => {
-      await expect(tokenBuyer.setFeeCollector(randomWallet.address))
-        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
-        .withArgs(wallet0.address, feeCollector.address);
+    it("should revert if it's attempted to be changed by anyone but the owner", async () => {
+      await expect(tokenBuyer.connect(randomWallet).setFeeCollector(randomWallet.address)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
     });
 
     it("should change the address", async () => {
-      await tokenBuyer.connect(feeCollector).setFeeCollector(randomWallet.address);
+      await tokenBuyer.setFeeCollector(randomWallet.address);
       const newAddress = await tokenBuyer.feeCollector();
       expect(newAddress).to.eq(randomWallet.address);
     });
 
     it("should emit a FeeCollectorChanged event", async () => {
-      const tx = tokenBuyer.connect(feeCollector).setFeeCollector(randomWallet.address);
+      const tx = tokenBuyer.setFeeCollector(randomWallet.address);
       await expect(tx).to.emit(tokenBuyer, "FeeCollectorChanged").withArgs(randomWallet.address);
     });
   });
 
   context("the fee collector's share", async () => {
-    it("should revert if it's attempted to be changed by anyone else", async () => {
-      await expect(tokenBuyer.setFeePercentBps("100"))
-        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
-        .withArgs(wallet0.address, feeCollector.address);
+    it("should revert if it's attempted to be changed by anyone but the owner", async () => {
+      await expect(tokenBuyer.connect(randomWallet).setFeePercentBps("100")).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
     });
 
     it("should change the value", async () => {
-      await tokenBuyer.connect(feeCollector).setFeePercentBps("100");
+      await tokenBuyer.setFeePercentBps("100");
       const newValue = await tokenBuyer.feePercentBps();
       expect(newValue).to.eq("100");
     });
 
     it("should emit a FeePercentBpsChanged event", async () => {
-      const tx = tokenBuyer.connect(feeCollector).setFeePercentBps("100");
+      const tx = tokenBuyer.setFeePercentBps("100");
       await expect(tx).to.emit(tokenBuyer, "FeePercentBpsChanged").withArgs("100");
     });
   });
 
   context("sweep tokens", async () => {
-    it("should revert if it's attempted to be called by anyone else", async () => {
-      await expect(tokenBuyer.sweep(constants.AddressZero, wallet0.address, 0))
-        .to.be.revertedWithCustomError(tokenBuyer, "AccessDenied")
-        .withArgs(wallet0.address, feeCollector.address);
+    it("should revert if it's attempted to be called by anyone but the owner", async () => {
+      await expect(
+        tokenBuyer.connect(randomWallet).sweep(constants.AddressZero, wallet0.address, 0)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("should revert if transferring tokens fails", async () => {
       await setCode(token.address, badTokenBytecode);
-      await expect(tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, 0))
+      await expect(tokenBuyer.sweep(token.address, wallet0.address, 0))
         .to.be.revertedWithCustomError(tokenBuyer, "TransferFailed")
         .withArgs(tokenBuyer.address, wallet0.address);
     });
@@ -335,7 +335,7 @@ describe("TokenBuyer", function () {
       const balance0 = await token.balanceOf(wallet0.address);
       const contractBalance0 = await token.balanceOf(tokenBuyer.address);
 
-      await tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, amount);
+      await tokenBuyer.sweep(token.address, wallet0.address, amount);
 
       const balance1 = await token.balanceOf(wallet0.address);
       const contractBalance1 = await token.balanceOf(tokenBuyer.address);
@@ -350,7 +350,7 @@ describe("TokenBuyer", function () {
 
       await token.transfer(tokenBuyer.address, amount);
 
-      const tx = tokenBuyer.connect(feeCollector).sweep(token.address, wallet0.address, amount);
+      const tx = tokenBuyer.sweep(token.address, wallet0.address, amount);
 
       await expect(tx).to.emit(tokenBuyer, "TokensSweeped").withArgs(token.address, wallet0.address, amount);
     });

@@ -76,6 +76,8 @@ function sweep(
 
 Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
 
+Callable only by the owner.
+
 #### Parameters
 
 | Name | Type | Description |

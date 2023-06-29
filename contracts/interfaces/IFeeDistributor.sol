@@ -8,18 +8,18 @@ interface IFeeDistributor {
     function baseFee(address token) external view returns (uint256 baseFee);
 
     /// @notice Sets the base fee for a given token.
-    /// @dev Callable only by the current fee collector.
+    /// @dev Callable only by the owner.
     /// @param token The token whose base fee is set.
     /// @param newFee The new base fee in wei.
     function setBaseFee(address token, uint256 newFee) external;
 
     /// @notice Sets the address that receives the fee from the funds.
-    /// @dev Callable only by the current fee collector.
+    /// @dev Callable only by the owner.
     /// @param newFeeCollector The new address of feeCollector.
     function setFeeCollector(address payable newFeeCollector) external;
 
     /// @notice Sets the fee's amount from the funds.
-    /// @dev Callable only by the fee collector.
+    /// @dev Callable only by the owner.
     /// @param newShare The percentual value expressed in basis points.
     function setFeePercentBps(uint96 newShare) external;
 
