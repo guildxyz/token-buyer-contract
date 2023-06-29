@@ -25,6 +25,7 @@ interface ITokenBuyer is IFeeDistributor {
     ) external payable;
 
     /// @notice Allows the feeCollector to withdraw any tokens stuck in the contract. Used to rescue funds.
+    /// @dev Callable only by the owner.
     /// @param token The address of the token to sweep. 0 for ether.
     /// @param recipient The recipient of the tokens.
     /// @param amount The amount of the tokens to sweep.
@@ -41,7 +42,6 @@ interface ITokenBuyer is IFeeDistributor {
     event TokensBought(uint256 guildId);
 
     /// @notice Event emitted when tokens are sweeped from the contract.
-    /// @dev Callable only by the current fee collector.
     /// @param token The address of the token sweeped. 0 for ether.
     /// @param recipient The recipient of the tokens.
     /// @param amount The amount of the tokens sweeped.

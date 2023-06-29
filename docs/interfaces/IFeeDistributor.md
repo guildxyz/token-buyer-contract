@@ -34,7 +34,7 @@ function setBaseFee(
 
 Sets the base fee for a given token.
 
-Callable only by the current fee collector.
+Callable only by the owner.
 
 #### Parameters
 
@@ -53,7 +53,7 @@ function setFeeCollector(
 
 Sets the address that receives the fee from the funds.
 
-Callable only by the current fee collector.
+Callable only by the owner.
 
 #### Parameters
 
@@ -71,7 +71,7 @@ function setFeePercentBps(
 
 Sets the fee's amount from the funds.
 
-Callable only by the fee collector.
+Callable only by the owner.
 
 #### Parameters
 
