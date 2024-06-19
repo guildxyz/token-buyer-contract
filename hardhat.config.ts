@@ -87,6 +87,42 @@ const config: HardhatUserConfig = {
     cyber: {
       url: "https://cyber.alt.technology",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    taiko: {
+      url: "https://taiko.blockpi.network/v1/rpc/public",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    blast: {
+      url: "https://blast.blockpi.network/v1/rpc/public",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    xlayer: {
+      url: "https://rpc.xlayer.tech",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    coredao: {
+      url: "https://core.public.infstones.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    metis: {
+      url: "https://metis-pokt.nodies.app",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    neon: {
+      url: "https://neon-proxy-mainnet.solana.p2p.org",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    polygonzk: {
+      url: "https://zkevm-rpc.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    scroll: {
+      url: "https://rpc.scroll.io",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    zeta: {
+      url: "https://zetachain-evm.blockpi.network/v1/rpc/public",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     }
   },
   gasReporter: {
