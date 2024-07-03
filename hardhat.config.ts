@@ -123,6 +123,10 @@ const config: HardhatUserConfig = {
     zeta: {
       url: "https://zetachain-evm.blockpi.network/v1/rpc/public",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    mint: {
+      url: "https://rpc.mintchain.io",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     }
   },
   gasReporter: {
@@ -153,6 +157,7 @@ const config: HardhatUserConfig = {
       polygonZkEVM: process.env.ZKEVM_POLYGONSCAN_API_KEY || "",
       scroll: process.env.SCROLLSCAN_API_KEY || ""
       // zeta: "", // no etherscan
+      // mint: "", // no etherscan
     },
     customChains: [
       {
