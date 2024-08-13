@@ -131,6 +131,14 @@ const config: HardhatUserConfig = {
     mode: {
       url: "https://mode.drpc.org",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    avalanche: {
+      url: "https://avax.meowrpc.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    lisk: {
+      url: "https://rpc.api.lisk.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     }
   },
   gasReporter: {
@@ -162,7 +170,9 @@ const config: HardhatUserConfig = {
       scroll: process.env.SCROLLSCAN_API_KEY || "",
       // zeta: "", // no etherscan
       // mint: "", // no etherscan
-      mode: "mode"
+      mode: "mode",
+      avalanche: "avalanche",
+      lisk: "lisk"
     },
     customChains: [
       {
@@ -233,6 +243,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan",
           browserURL: "https://modescan.io"
+        }
+      },
+      {
+        network: "avalanche",
+        chainId: 43114,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan",
+          browserURL: "https://snowtrace.io"
+        }
+      },
+      {
+        network: "lisk",
+        chainId: 1135,
+        urls: {
+          apiURL: "https://blockscout.lisk.com/api",
+          browserURL: "https://blockscout.lisk.com"
         }
       }
     ]
