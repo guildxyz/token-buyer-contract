@@ -82,6 +82,14 @@ Note: the contract's address and the constructor arguments are printed by the de
 
 For more detailed instructions, check out the plugin's documentation [here](https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#usage).
 
+Some block explorers might not support the verify plugin. In that case, use [hardhat-solidity-json](https://www.npmjs.com/package/@xyrusworx/hardhat-solidity-json) to generate the standard JSON output and verify the contracts manually:
+
+```bash
+npx hardhat solidity-json
+```
+
+The generated files will be under the [artifacts/solidity-json](./artifacts/solidity-json) folder, which you can typically submit on block explorers.
+
 ## Linting
 
 The project uses [Solhint](https://github.com/protofire/solhint) for Solidity smart contracts and [ESLint](https://eslint.org) for TypeScript files. To lint all files, simply execute:
